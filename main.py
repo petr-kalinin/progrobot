@@ -24,7 +24,8 @@ class YourBot(telepot.Bot):
             return
         try:
             answer = stackoverflow.search(msg["text"])
-            self.sendMessage(chat_id, answer)
+            print(answer)
+            self.sendMessage(chat_id, answer, parse_mode="HTML")
         except Exception as e:
             self.sendMessage(chat_id, "Error: " + str(type(e)) + ": " + str(e))
             traceback.print_exc()

@@ -1,14 +1,10 @@
 #!/usr/bin/python3
+import html
 import urllib.request
 import urllib.parse
 import json
 import gzip
-import html2text
-
-h = html2text.HTML2Text()
-h.ignore_links = True
-h.ignore_images = True
-h.body_width = 0
+from html2tele import html2tele
 
 def send_request(method, parameters):
     request_string = urllib.parse.urlencode(parameters)
@@ -34,6 +30,11 @@ def get_answer(question):
     response = send_request("/questions/{ids}/answers".format(ids=ids), request)
     return response["items"][0]
 
+def format_user_data(post):
+    return "{body} — <a href='{author_link}'>{author}</a>".format(body=html2tele(post["body"]).strip(),
+                                                       author=post["owner"]["display_name"],
+                                                       author_link=html.escape(post["owner"]["link"], quote=True))
+
 def search(query):
     request = {
         'order': 'desc',
@@ -47,8 +48,11 @@ def search(query):
     question = response["items"][0]
     answer = get_answer(question)
 
-    return question["title"] + "\n\n" + h.handle(question["body"]) + "\n---\n" \
-        + h.handle(answer["body"]) + "\n---\n" + question["link"]
+    return (question["link"] + "\n\n"
+            + "<b>" + question["title"] + "</b>\n\n" 
+            + format_user_data(question) + "\n\n"
+            + "<b>Answer:</b>\n\n"
+            + format_user_data(answer) )
         
 
 
