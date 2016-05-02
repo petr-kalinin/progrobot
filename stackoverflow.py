@@ -40,6 +40,7 @@ def search(query):
         'order': 'desc',
         'sort': 'relevance',
         'q': query,
+        'answers': 1,
         'site': 'stackoverflow',
         'filter': 'withbody',
         'pagesize': 1
@@ -52,7 +53,8 @@ def search(query):
             + "<b>" + question["title"] + "</b>\n\n" 
             + format_user_data(question) + "\n\n"
             + "<b>Answer:</b>\n\n"
-            + format_user_data(answer) )
+            + format_user_data(answer) +"\n\n"
+            + "ⓒ StackOverflow users, CC-BY-SA 3.0")
         
 
 
