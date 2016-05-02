@@ -29,7 +29,7 @@ class _HTMLToText(HTMLParser):
         elif tag == "a" and (self._tag_count == 1):
             href = find_href(attrs)
             self._buf.append("<a href='{0}'>".format(html.escape(href, quote=True)))
-        elif tag in ('p', 'br'):
+        elif tag in ('p', 'br', 'div', 'table'):
             self._buf.append('\n')
         elif tag in ('script', 'style'):
             self.hide_output = True
@@ -39,7 +39,7 @@ class _HTMLToText(HTMLParser):
             self._buf.append('\n')
 
     def handle_endtag(self, tag):
-        if tag == 'p':
+        if tag in ('p', 'div', 'table'):
             self._buf.append('\n')
         if (tag in SUPPORTED_TAGS or tag == "a") and (self._tag_count == 1):
             self._buf.append("</" + tag + ">")
@@ -63,7 +63,10 @@ class _HTMLToText(HTMLParser):
             self._buf.append("&" + name + ";")
 
     def get_text(self):
-        return re.sub(r' +', ' ', ''.join(self._buf))
+        res = re.sub(r' +', ' ', ''.join(self._buf))
+        res = re.sub(r' +\n', '\n', res)
+        res = re.sub(r'\n +', '\n', res)
+        return res
 
 def html2tele(html):
     parser = _HTMLToText()

@@ -8,6 +8,7 @@ from pprint import pprint
 import traceback
 
 import stackoverflow
+import reference
 
 class YourBot(telepot.Bot):
     def __init__(self, *args, **kwargs):
@@ -23,7 +24,9 @@ class YourBot(telepot.Bot):
         if content_type != 'text':
             return
         try:
-            answer = stackoverflow.search(msg["text"])
+            answer = reference.search(msg["text"])
+            if not answer:
+                answer = stackoverflow.search(msg["text"])
             print(answer)
             self.sendMessage(chat_id, answer, parse_mode="HTML")
         except Exception as e:

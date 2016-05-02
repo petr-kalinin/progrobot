@@ -14,10 +14,12 @@ class ReferenceItem:
     short = ""
     full = ""
     fullest = ""
+    href = ""
     subitems = []
     
     def __str__(self):
         return ("name: " + self.name + "\n"
+                + "href: " + self.href + "\n"
                 + "module: " + str(self.module) + "\n"
                 + "usage: " + str(self.usage) + "\n"
                 + "short: " + self.short + "\n\n"
@@ -27,6 +29,7 @@ class ReferenceItem:
     
     def to_dict(self):
         return {"name" : self.name,
+                "href": self.href,
                 "module" : self.module,
                 "usage" : self.usage,
                 "short" : self.short,
@@ -52,13 +55,13 @@ def make_usage(soup):
     result = ""
     for element in elements:
         codes = element.find_all(class_="cpp")
-        result = result + "".join(s for c in codes for s in c.strings)
+        result = result + "\n".join("".join(s for s in c.strings) for c in codes)
         version = element.find(string=re.compile(r'\s*\(\d+\)\s*'))
         if version:
             result = result + "  // " + version.string.strip()
         result = result + "\n"
     result = re.sub(r'\n+', '\n', result)
-    return "<code>" + result.strip() + "</code>"
+    return result.strip()
 
 def make_desc(soup):
     p = soup.select("#mw-content-text > p:nth-of-type(1)")
@@ -110,6 +113,7 @@ def make_subitems(soup, filename):
 def parse_file(filename):
     soup = BeautifulSoup(open(filename), 'lxml')
     ref = ReferenceItem()
+    ref.href = "http://en.cppreference.com/w/cpp/" + filename
     ref.name = make_name(soup)
     ref.module = make_module(soup)
     ref.usage = make_usage(soup)
@@ -119,11 +123,11 @@ def parse_file(filename):
 
 def process_file(filename, reference, index):
     #print("\n-----------\n" + filename)
-    print(".", end=".", flush=True)
+    print(".", end="", flush=True)
     ref = parse_file(filename)
     result = reference.insert_one(ref.to_dict())
     #print("insert: ", ref.to_dict())
-    names = ref.name.split("(")[0].split(",")
+    names = ref.name.split("(")[0].split("<")[0].split(",")
     for name in names:
         split_name = name.strip().split("::")
         if len(split_name) > 3:
