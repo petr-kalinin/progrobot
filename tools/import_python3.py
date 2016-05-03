@@ -84,12 +84,12 @@ def parse_file(filename, refs):
                 create_ref(refs, currentName, module, base_href)
                 refs[currentName].usage = "".join(tag.dt.strings)[:-1].strip()
             tag = tag.dd
-        elif tag.name == "p":
+        elif tag.name in ("p", "pre"):
             if currentName:
                 if refs[currentName].short == "":
                     refs[currentName].short = "".join(str(x) for x in tag.contents)
                 refs[currentName].full += str(tag)
-            tag = tag.next_sibling
+            tag = tag.next_sibling if tag.next_sibling else tag.next_element
         else:
             tag = tag.next_element
     return refs
@@ -159,7 +159,7 @@ for directory, subdirs, files in os.walk("."):
 
 finalize(refs)
 
-#print(refs["re"])
+#print(refs)
 
 for ref in refs.values():
     if ref.name != "":
