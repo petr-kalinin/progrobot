@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 import sys
+import re
 import time
 import threading
 import random
@@ -27,6 +28,7 @@ class YourBot(telepot.Bot):
             answer = reference.search(msg["text"])
             if not answer:
                 answer = stackoverflow.search(msg["text"])
+            answer = re.sub(r'\n\n+', '\n\n', answer)
             print(answer)
             self.sendMessage(chat_id, answer, parse_mode="HTML")
         except Exception as e:

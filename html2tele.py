@@ -63,7 +63,9 @@ class _HTMLToText(HTMLParser):
             self._buf.append("&" + name + ";")
 
     def get_text(self):
-        res = re.sub(r' +', ' ', ''.join(self._buf))
+        res = ''.join(self._buf)
+        res = re.sub(r' +', ' ', res)
+        res = re.sub(r'\n\n+', '\n\n', res)
         res = re.sub(r' +\n', '\n', res)
         res = re.sub(r'\n +', '\n', res)
         return res

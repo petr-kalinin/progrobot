@@ -15,6 +15,7 @@ class ReferenceItem:
     full = ""
     fullest = ""
     href = ""
+    copyright = ""
     subitems = []
     
     def __str__(self):
@@ -25,7 +26,8 @@ class ReferenceItem:
                 + "short: " + self.short + "\n\n"
                 + "full: " + self.full + "\n\n"
                 + "fullest: " + self.fullest + "\n\n"
-                + "subitems: " + str(self.subitems))
+                + "subitems: " + str(self.subitems)
+                + "copyright: " + self.copyright)
     
     def to_dict(self):
         return {"name" : self.name,
@@ -35,7 +37,8 @@ class ReferenceItem:
                 "short" : self.short,
                 "full" : self.full,
                 "fullest" : self.fullest,
-                "subitems" : self.subitems}
+                "subitems" : self.subitems,
+                "copyright": self.copyright}
     
 def make_name(soup):
     return "".join(soup.find(id="firstHeading").strings).strip()
@@ -119,6 +122,7 @@ def parse_file(filename):
     ref.usage = make_usage(soup)
     ref.short, ref.full, ref.fullest = make_desc(soup)
     ref.subitems = make_subitems(soup, filename)
+    ref.copyright = "ⓒ CppReference authors, CC-BY-SA 3.0 / GFDL, " + ref.href
     return ref
 
 def process_file(filename, reference, index):
