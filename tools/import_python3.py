@@ -146,6 +146,7 @@ client.drop_database("python3")
 db = client.python3
 reference = db.reference
 index = db.index
+index.create_index("name")
 
 refs = {}
 

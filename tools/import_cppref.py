@@ -155,6 +155,7 @@ client.drop_database("cpp")
 db = client.cpp
 reference = db.reference
 index = db.index
+index.create_index("name")
 
 for directory, subdirs, files in os.walk("."):
     for f in files:
