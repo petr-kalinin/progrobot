@@ -25,7 +25,7 @@ def search(query):
         query.remove("python")
     else:
         dbs = [db_cpp, db_python3]
-    query = " ".join(query)
+    query = " ".join(filter(lambda x: x, query))
     for db in dbs:
         cursor = db.index.find({"name" : query}, sort=[("relevance", pymongo.DESCENDING)], limit=1)
         for doc in cursor:
