@@ -6,6 +6,7 @@ import threading
 import random
 import telepot
 from pprint import pprint
+from datetime import datetime
 import traceback
 import pymongo
 
@@ -13,7 +14,6 @@ import stackoverflow
 import reference
 
 client = pymongo.MongoClient()
-client.drop_database("requests")
 db = client.requests
 requests = db.requests
 
@@ -28,7 +28,7 @@ class YourBot(telepot.Bot):
         content_type, chat_type, chat_id = telepot.glance(msg)
         print('Chat:', content_type, chat_type, chat_id)
         pprint(msg)
-        requests.insert({"request": msg})
+        requests.insert({"request": msg, "time": datetime.now().isoformat()})
 
         if content_type != 'text':
             return
