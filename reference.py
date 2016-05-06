@@ -10,7 +10,14 @@ db_cpp = client.cpp
 db_python3 = client.python3
 
 def search(query):
-    query = re.split(r"\W+", query)
+    ans = search_one(query)
+    if not ans:
+        ans = search_one(query.lower())
+    return ans
+
+def search_one(query):
+    query = re.split(r"[^a-zA-Z_+-]+", query)
+    print("Query: ", query)
     if len(query)>7:
         return None
     dbs = []
@@ -25,7 +32,9 @@ def search(query):
         query.remove("python")
     else:
         dbs = [db_cpp, db_python3]
+    print("Query: ", query)
     query = " ".join(filter(lambda x: x, query))
+    print("Query: ", query)
     for db in dbs:
         cursor = db.index.find({"name" : query}, sort=[("relevance", pymongo.DESCENDING)], limit=1)
         for doc in cursor:
