@@ -41,10 +41,10 @@ def search_one(query):
             ref = db.reference.find({"_id" : doc["reference_id"]})
             for res in ref:
                 subitems = [html2tele("<code>{0}</code> : {1}".format(*x)) for x in res["subitems"]]
-                result ="<b>" + res["name"] + "</b> "
+                result = ""
                 if res["module"]:
-                    result += "<code>" + html.escape(res["module"]) + "</code>"
-                result += "\n\n"
+                    result += "<code>" + html.escape(res["module"]) + "</code>\n"
+                result = result + "<b>" + res["name"] + "</b>\n\n"
                 if res["usage"]:
                     result += "<pre>" + html.escape(res["usage"]) + "</pre>\n"
                 result += (html2tele(res.get("full", "")) + "\n"
