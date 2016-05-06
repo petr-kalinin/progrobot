@@ -33,6 +33,8 @@ re match — for this specific function from <code>re</code> module
 You can omit some of first tokens, for example, "vector insert" also works. You can separate tokens with any non-word characters you like, for example, "vector::insert" also works.
 
 You can also search StackOverflow by starting your request with /so command. For example, "/so javascript print to console".
+
+The bot is ⓒ Petr Kalinin, GNU AGPL, <a href="https://github.com/petr-kalinin/progrobot">github.com/petr-kalinin/progrobot</a>
 """
 
 class YourBot(telepot.Bot):
@@ -51,8 +53,10 @@ class YourBot(telepot.Bot):
             return
         try:
             query = msg["text"]
+            additional_parameters = {}
             if query == "/start" or query == "/help":
                 answer = HELP_MESSAGE
+                additional_parameters["disable_web_page_preview"] = "True"
             elif query == "/so":  # TODO: accept also /so@Progrobot
                 answer = "Please follow /so command by actual request to StackOverflow"
             elif query[0:4] == "/so ":
@@ -70,7 +74,7 @@ class YourBot(telepot.Bot):
                               "/so " + query)
             answer = re.sub(r'\n\n+', '\n\n', answer)
             print(answer)
-            self.sendMessage(chat_id, answer, parse_mode="HTML")
+            self.sendMessage(chat_id, answer, parse_mode="HTML", **additional_parameters)
         except Exception as e:
             self.sendMessage(chat_id, "Error: " + str(type(e)) + ": " + str(e))
             traceback.print_exc()
