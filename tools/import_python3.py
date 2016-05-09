@@ -51,7 +51,8 @@ def create_ref(refs, name, module, base_href):
     if not name in refs:
         refs[name] = ReferenceItem()
     refs[name].name = name
-    refs[name].module = "import " + module
+    if module:
+        refs[name].module = "import " + module
     refs[name].href = base_href +  "#" + name
     refs[name].copyright = "ⓒ Python developers, " + refs[name].href
     
@@ -63,12 +64,17 @@ def create_ref(refs, name, module, base_href):
 
     
 def parse_file(filename, refs):
-    base_href = "https://docs.python.org/" + filename
+    base_href = "https://docs.python.org/" + filename[2:]
     soup = BeautifulSoup(open(filename), 'lxml')
-    module = soup.h1.a.string
+    module_a = soup.h1.a
+    if not "headerlink" in module_a.get("class"):
+        module = module_a.string
+    else:
+        module = None
     #print("found module", module)
     currentName = module
-    create_ref(refs, currentName, module, base_href)
+    if currentName:
+        create_ref(refs, currentName, module, base_href)
     tag = soup.h1
     while tag:
         if isinstance(tag, bs4.element.NavigableString) or isinstance(tag, bs4.element.Comment):
