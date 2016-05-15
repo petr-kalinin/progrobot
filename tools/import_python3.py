@@ -61,6 +61,15 @@ def create_ref(refs, name, module, base_href):
     if not parent in refs:
         refs[parent] = ReferenceItem()
     refs[parent].subitems.append((name, ""))
+    
+    
+def can_be_short(text):
+    #print("Testing string `" + text + "`")
+    if re.match("New in version", text):
+        return False
+    if re.match("Source code:", text):
+        return False
+    return True
 
     
 def parse_file(filename, refs):
@@ -93,7 +102,9 @@ def parse_file(filename, refs):
         elif tag.name in ("p", "pre"):
             if currentName:
                 if refs[currentName].short == "":
-                    refs[currentName].short = "".join(str(x) for x in tag.contents)
+                    text = "".join(tag.strings)
+                    if can_be_short(text):
+                        refs[currentName].short = "".join(str(x) for x in tag.contents)
                 refs[currentName].full += str(tag)
             tag = tag.next_sibling if tag.next_sibling else tag.next_element
         else:
@@ -126,16 +137,30 @@ def process_file(filename, refs):
     parse_file(filename, refs)
     
 def first_sentence(text):
+    def is_balanced(text):
+        for pair in ['()', '“”']:
+            if text.count(pair[0]) != text.count(pair[1]):
+                return False
+        return True
+    
+    MAX_SHORT_LEN = 1000
     soup = BeautifulSoup("<html><body><p>" + text + "</html></body></p>", 'lxml').p
     res = ""
     for el in soup.children:
         if isinstance(el, bs4.element.NavigableString) and ('.' in el):
-            res += el.split('.')[0]
-            return res
-        res += str(el)
+            for ch in el:
+                res += ch
+                if ch == '.' and is_balanced(res):
+                    return res
+                if el in ' ,!?()[]:;' and len(res) > MAX_SHORT_LEN:
+                    return res + "..."
+        else:
+            res += str(el)
+        if len(res) > MAX_SHORT_LEN:
+            return res + "..."
         el = el.next_sibling
     return res
-    
+
 def finalize(refs):
     for ref_name, ref in refs.items():
         if ref.name == "":
@@ -159,7 +184,7 @@ refs = {}
 for directory, subdirs, files in os.walk("."):
     for f in files:
         process_file(os.path.join(directory, f), refs)
-#process_file("3/library/urllib.request.html", refs)
+#process_file("3/library/urllib.parse.html", refs)
 #process_file("3/library/re.html", refs)
 #process_file("3/library/json.html", refs)
 
@@ -167,9 +192,19 @@ finalize(refs)
 
 #print(refs)
 
+def check_urllib_parse():
+    assert refs["urllib.parse"].short.startswith("This module")
+    found = False
+    for item in refs["urllib"].subitems:
+        if item[0] == "urllib.parse":
+            found = True
+            assert item[1].endswith("“base URL.”")
+    assert found
+            
+check_urllib_parse()
+
 for ref in refs.values():
     if ref.name != "":
         #print(ref)
         #print("\n")
         insert_ref(ref, reference, index)
-
