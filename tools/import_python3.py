@@ -90,7 +90,9 @@ def parse_file(filename, refs):
             tag = tag.next_element
             continue
         #print(currentName, tag.name)
-        if hasclass(tag, ["section"]):
+        if hasclass(tag, "sphinxsidebar"):
+            break
+        elif hasclass(tag, ["section"]):
             currentName = None
             tag = tag.next_element
         elif hasclass(tag, ['class', 'function', 'data']):
@@ -184,7 +186,7 @@ refs = {}
 for directory, subdirs, files in os.walk("."):
     for f in files:
         process_file(os.path.join(directory, f), refs)
-#process_file("3/library/urllib.parse.html", refs)
+#process_file("3/library/urllib.html", refs)
 #process_file("3/library/re.html", refs)
 #process_file("3/library/json.html", refs)
 
@@ -192,19 +194,46 @@ finalize(refs)
 
 #print(refs)
 
-def check_urllib_parse():
-    assert refs["urllib.parse"].short.startswith("This module")
-    found = False
-    for item in refs["urllib"].subitems:
-        if item[0] == "urllib.parse":
-            found = True
-            assert item[1].endswith("“base URL.”")
-    assert found
-            
-check_urllib_parse()
-
 for ref in refs.values():
     if ref.name != "":
         #print(ref)
         #print("\n")
         insert_ref(ref, reference, index)
+        
+#------- Testing
+
+def assert_starts_with(text, start):
+    if not text.startswith(start):
+        print("Text `" + text + "` does not start with `" + start + "`")
+        raise AssertionError()
+
+def assert_ends_with(text, start):
+    if not text.endswith(start):
+        print("Text `" + text + "` does not end with `" + start + "`")
+        raise AssertionError()
+
+def check_urllib_parse():
+    assert_starts_with(refs["urllib.parse"].short, "This module")
+    found = False
+    for item in refs["urllib"].subitems:
+        if item[0] == "urllib.parse":
+            found = True
+            assert_starts_with(item[1], "This module")
+            assert_ends_with(item[1], "“base URL.”")
+    assert found
+    
+def check_unittest_mock():
+    assert_starts_with(refs["unittest.mock"].short, '<a class="reference internal"')
+    found = False
+    for item in refs["unittest"].subitems:
+        if item[0] == "unittest.mock":
+            found = True
+            assert_starts_with(item[1], '<a class="reference internal"')
+    assert found
+    
+def check_urllib():
+    assert_ends_with(refs["urllib"].full, "with URLs:</p>")
+            
+check_urllib_parse()
+check_unittest_mock()
+check_urllib()
