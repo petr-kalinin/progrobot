@@ -90,7 +90,7 @@ def parse_file(filename, refs):
             tag = tag.next_element
             continue
         #print(currentName, tag.name)
-        if hasclass(tag, "sphinxsidebar"):
+        if hasclass(tag, ["sphinxsidebar"]):
             break
         elif hasclass(tag, ["section"]):
             currentName = None
@@ -233,7 +233,13 @@ def check_unittest_mock():
     
 def check_urllib():
     assert_ends_with(refs["urllib"].full, "with URLs:</p>")
-            
+
+def check_re():
+    assert len(refs["re"].subitems) > 0
+    assert "re.match" in refs
+
+
 check_urllib_parse()
 check_unittest_mock()
 check_urllib()
+check_re()
