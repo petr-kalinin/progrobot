@@ -1,7 +1,10 @@
+#!/usr/bin/python3
 import html
 from html.parser import HTMLParser
 from html.entities import name2codepoint
 import re
+
+import unittest
 
 SUPPORTED_TAGS = ('b', 'strong', 'i', 'em', 'code', 'pre')
 CODE_TAGS = ('code', 'pre')
@@ -23,7 +26,7 @@ class _HTMLToText(HTMLParser):
         self.current_tag = None
         
     def process_last_text(self):
-        text = "".join(self.last_text).strip()
+        text = "".join(self.last_text)
         if not self.current_tag in CODE_TAGS:
             text = re.sub("\s+", " ", text)
         self.buf.append(text)
@@ -71,7 +74,6 @@ class _HTMLToText(HTMLParser):
         self.tag_count -= 1
 
     def handle_data(self, text):
-        print("data", text, self.hide_output)
         if not self.hide_output:
             self.push_text(html.escape(text))
 
@@ -90,8 +92,22 @@ class _HTMLToText(HTMLParser):
         return res
 
 def html2tele(html):
-    print("html:", html)
+    print("html2tele input: ", html)
     parser = _HTMLToText()
     parser.feed(html)
     parser.close()
-    return parser.get_text()
+    result = parser.get_text()
+    print("html2tele result: ", result)
+    return result
+
+#----------
+
+class TestHtml2Tele(unittest.TestCase):
+
+    def test_spaces_around_tags(self):
+        html = "The <a href=''>urllib.error</a> module"
+        expected = "The <a href=''>urllib.error</a> module"
+        self.assertEqual(html2tele(html), expected)
+
+if __name__ == '__main__':
+    unittest.main()

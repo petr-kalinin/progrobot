@@ -32,7 +32,6 @@ def search_one(query):
         query.remove("python")
     else:
         dbs = [db_cpp, db_python3]
-    print("Query: ", query)
     query = " ".join(filter(lambda x: x, query))
     print("Query: ", query)
     for db in dbs:
