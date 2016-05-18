@@ -57,6 +57,8 @@ def create_ref(refs, name, module, base_href):
     refs[name].copyright = "ⓒ Python developers, " + refs[name].href
     
     parent = ".".join(name.split(".")[:-1])
+    if parent != "" and parent[0] == "@":
+        parent = parent[1:]
     #print(name, parent)
     if not parent in refs:
         refs[parent] = ReferenceItem()
@@ -88,8 +90,6 @@ def parse_file(filename, refs):
         create_ref(refs, currentName, module, base_href)
     tag = soup.h1.next_sibling
     while tag is not None:
-        if currentName == "unittest.mock":
-            print(filename)
         #print("Tag: ", tag)
         if isinstance(tag, bs4.element.Comment):
             tag = tag.next_element
@@ -110,9 +110,12 @@ def parse_file(filename, refs):
             tag = tag.next_element
         elif hasclass(tag, ['class', 'function', 'data', 'exception']):
             currentName = tag.dt.get('id')
+            usage = "".join(tag.dt.strings).strip()
+            if currentName and usage[0] == "@":
+                currentName = "@" + currentName
             if currentName:
                 create_ref(refs, currentName, module, base_href)
-                refs[currentName].usage = "".join(tag.dt.strings)[:-1].strip()
+                refs[currentName].usage = usage[:-1].strip()
             tag = tag.dd.next_element
         elif tag.name in ("p", "pre", 'li', 'dt', 'dd'):
             if currentName:
@@ -131,7 +134,7 @@ def insert_ref(ref, reference, index):
     #print("insert: ", ref.to_dict())
     names = [ref.name]
     for name in names:
-        split_name = name.strip().split(".")
+        split_name = name.strip('@ ').split(".")
         if len(split_name) > 3:
             print(split_name," --- ", ref.name)
         for i in range(len(split_name)):
@@ -203,6 +206,7 @@ for directory, subdirs, files in os.walk("."):
 #process_file("3/library/urllib.parse.html", refs)
 #process_file("3/library/re.html", refs)
 #process_file("3/library/json.html", refs)
+#process_file("3/library/unittest.html", refs)
 
 finalize(refs)
 
@@ -225,25 +229,25 @@ def assert_ends_with(text, start):
     if not text.endswith(start):
         print("Text `" + text + "` does not end with `" + start + "`")
         raise AssertionError()
+    
+def find_subitem(ref, subitem):
+    found = None
+    for item in ref.subitems:
+        if item[0] == subitem:
+            assert not found
+            found = item
+    return found
 
 def check_urllib_parse():
     assert_starts_with(refs["urllib.parse"].short, "This module")
-    found = False
-    for item in refs["urllib"].subitems:
-        if item[0] == "urllib.parse":
-            found = True
-            assert_starts_with(item[1], "This module")
-            assert_ends_with(item[1], "“base URL.”")
-    assert found
+    item = find_subitem(refs["urllib"], "urllib.parse")
+    assert_starts_with(item[1], "This module")
+    assert_ends_with(item[1], "“base URL.”")
     
 def check_unittest_mock():
     assert_starts_with(refs["unittest.mock"].short, '<a class="reference internal"')
-    found = 0
-    for item in refs["unittest"].subitems:
-        if item[0] == "unittest.mock":
-            found = found + 1
-            assert_starts_with(item[1], '<a class="reference internal"')
-    assert found == 1
+    item = find_subitem(refs["unittest"], "unittest.mock")
+    assert_starts_with(item[1], '<a class="reference internal"')
     
 def check_urllib():
     assert_ends_with(refs["urllib"].full, "files</li>")
@@ -258,9 +262,13 @@ def check_re():
 def check_unittest():
     assert_ends_with(refs["unittest"].full, "executing the tests.</dd>")
 
-
+def check_unittest_skip():
+    assert "@unittest.skip" in refs
+    assert find_subitem(refs["unittest"], "@unittest.skip")
+    
 check_urllib_parse()
 check_unittest_mock()
 check_urllib()
 check_re()
 check_unittest()
+check_unittest_skip()
