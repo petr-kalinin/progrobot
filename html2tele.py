@@ -54,7 +54,7 @@ class _HTMLToText(HTMLParser):
             href = find_href(attrs)
             self.push_tag("<a href='{0}'>".format(html.escape(href, quote=True)))
             self.current_tag = "a"
-        elif tag in ('p', 'br', 'div', 'table'):
+        elif tag in ('p', 'br', 'div', 'table','dt','dd','li'):
             self.push_newlines(2)
         elif tag in ('script', 'style'):
             self.hide_output = True

@@ -45,8 +45,8 @@ def search_one(query):
                     result += "<code>" + html.escape(res["module"]) + "</code>\n"
                 result = result + "<b>" + res["name"] + "</b>\n\n"
                 if res["usage"]:
-                    result += "<pre>" + html.escape(res["usage"]) + "</pre>\n"
-                result += (html2tele(res.get("full", "")) + "\n"
+                    result += "<pre>" + html.escape(res["usage"]) + "</pre>\n\n"
+                result += (html2tele(res.get("full", "")) + "\n\n"
                         + "\n".join(subitems) 
                         + "\n\n" + res["copyright"])
                 return result

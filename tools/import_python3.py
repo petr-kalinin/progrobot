@@ -84,24 +84,33 @@ def parse_file(filename, refs):
     currentName = module
     if currentName:
         create_ref(refs, currentName, module, base_href)
-    tag = soup.h1
-    while tag:
-        if isinstance(tag, bs4.element.NavigableString) or isinstance(tag, bs4.element.Comment):
+    tag = soup.h1.next_sibling
+    while tag is not None:
+        #print("Tag: ", tag)
+        if isinstance(tag, bs4.element.Comment):
             tag = tag.next_element
             continue
-        #print(currentName, tag.name)
+        if isinstance(tag, bs4.element.NavigableString):
+            if tag.strip() != "" and currentName:
+                if refs[currentName].short == "":
+                    if can_be_short(tag):
+                        refs[currentName].short = tag
+                refs[currentName].full += tag
+            tag = tag.next_element
+            continue
+        #print(currentName, tag.name, "`"+refs[currentName].short+"`" if currentName else "")
         if hasclass(tag, ["sphinxsidebar"]):
             break
-        elif hasclass(tag, ["section"]):
+        elif hasclass(tag, ["section", "seealso"]):
             currentName = None
             tag = tag.next_element
-        elif hasclass(tag, ['class', 'function', 'data']):
+        elif hasclass(tag, ['class', 'function', 'data', 'exception']):
             currentName = tag.dt.get('id')
             if currentName:
                 create_ref(refs, currentName, module, base_href)
                 refs[currentName].usage = "".join(tag.dt.strings)[:-1].strip()
-            tag = tag.dd
-        elif tag.name in ("p", "pre"):
+            tag = tag.dd.next_element
+        elif tag.name in ("p", "pre", 'li', 'dt', 'dd'):
             if currentName:
                 if refs[currentName].short == "":
                     text = "".join(tag.strings)
@@ -146,7 +155,8 @@ def first_sentence(text):
         return True
     
     MAX_SHORT_LEN = 1000
-    soup = BeautifulSoup("<html><body><p>" + text + "</html></body></p>", 'lxml').p
+    html = "<html><body><div>" + text + "</div></body></html>"
+    soup = BeautifulSoup(html, 'lxml').div
     res = ""
     for el in soup.children:
         if isinstance(el, bs4.element.NavigableString) and ('.' in el):
@@ -186,13 +196,13 @@ refs = {}
 for directory, subdirs, files in os.walk("."):
     for f in files:
         process_file(os.path.join(directory, f), refs)
-#process_file("3/library/urllib.html", refs)
+#process_file("3/library/urllib.parse.html", refs)
 #process_file("3/library/re.html", refs)
 #process_file("3/library/json.html", refs)
 
 finalize(refs)
 
-#print(refs)
+#print(refs["re"])
 
 for ref in refs.values():
     if ref.name != "":
@@ -232,14 +242,21 @@ def check_unittest_mock():
     assert found
     
 def check_urllib():
-    assert_ends_with(refs["urllib"].full, "with URLs:</p>")
+    assert_ends_with(refs["urllib"].full, "files</li>")
 
 def check_re():
     assert len(refs["re"].subitems) > 0
     assert "re.match" in refs
+    assert refs["re"].subitems[0][0] == "re.compile"
+    assert_ends_with(refs["re"].subitems[0][1], "described below.")
+    assert len(refs["re"].subitems[0][1].strip()) > 0
+
+def check_unittest():
+    assert_ends_with(refs["unittest"].full, "executing the tests.</dd>")
 
 
 check_urllib_parse()
 check_unittest_mock()
 check_urllib()
 check_re()
+check_unittest()

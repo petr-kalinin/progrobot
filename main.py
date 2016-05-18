@@ -72,7 +72,7 @@ class YourBot(telepot.Bot):
                               "If you were intending to search StackOverflow for a question, " +
                               "then prefix your request with /so command: \n" +
                               "/so " + query)
-            answer = re.sub(r'\n\n+', '\n\n', answer)
+            answer = re.sub(r'\n(\s*\n+)', '\n\n', answer)
             print(answer)
             self.sendMessage(chat_id, answer, parse_mode="HTML", **additional_parameters)
         except Exception as e:
