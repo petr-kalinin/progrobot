@@ -60,7 +60,9 @@ def create_ref(refs, name, module, base_href):
     #print(name, parent)
     if not parent in refs:
         refs[parent] = ReferenceItem()
-    refs[parent].subitems.append((name, ""))
+    subitem = (name, "")
+    if not subitem in refs[parent].subitems:
+        refs[parent].subitems.append((name, ""))
     
     
 def can_be_short(text):
@@ -86,6 +88,8 @@ def parse_file(filename, refs):
         create_ref(refs, currentName, module, base_href)
     tag = soup.h1.next_sibling
     while tag is not None:
+        if currentName == "unittest.mock":
+            print(filename)
         #print("Tag: ", tag)
         if isinstance(tag, bs4.element.Comment):
             tag = tag.next_element
@@ -234,12 +238,12 @@ def check_urllib_parse():
     
 def check_unittest_mock():
     assert_starts_with(refs["unittest.mock"].short, '<a class="reference internal"')
-    found = False
+    found = 0
     for item in refs["unittest"].subitems:
         if item[0] == "unittest.mock":
-            found = True
+            found = found + 1
             assert_starts_with(item[1], '<a class="reference internal"')
-    assert found
+    assert found == 1
     
 def check_urllib():
     assert_ends_with(refs["urllib"].full, "files</li>")
