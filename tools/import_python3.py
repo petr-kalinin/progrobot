@@ -55,16 +55,15 @@ def create_ref(refs, name, module, base_href):
         refs[name].module = "import " + module
     refs[name].href = base_href +  "#" + name
     refs[name].copyright = "ⓒ Python developers, " + refs[name].href
-    
+
     parent = ".".join(name.split(".")[:-1])
     if parent != "" and parent[0] == "@":
         parent = parent[1:]
-    #print(name, parent)
     if not parent in refs:
         refs[parent] = ReferenceItem()
     subitem = (name, "")
     if not subitem in refs[parent].subitems:
-        refs[parent].subitems.append((name, ""))
+        refs[parent].subitems.append(subitem)
     
     
 def can_be_short(text):
@@ -108,8 +107,9 @@ def parse_file(filename, refs):
         elif hasclass(tag, ["section", "seealso"]):
             currentName = None
             tag = tag.next_element
-        elif hasclass(tag, ['class', 'function', 'data', 'exception']):
+        elif hasclass(tag, ['class', 'classmethod', 'method', 'function', 'data', 'exception']):
             currentName = tag.dt.get('id')
+            
             usage = "".join(tag.dt.strings).strip()
             if currentName and usage[0] == "@":
                 currentName = "@" + currentName
@@ -203,14 +203,14 @@ refs = {}
 for directory, subdirs, files in os.walk("."):
     for f in files:
         process_file(os.path.join(directory, f), refs)
-#process_file("3/library/urllib.parse.html", refs)
+#process_file("3/library/datetime.html", refs)
 #process_file("3/library/re.html", refs)
 #process_file("3/library/json.html", refs)
 #process_file("3/library/unittest.html", refs)
 
 finalize(refs)
 
-#print(refs["re"])
+#print(refs['datetime.datetime'].subitems)
 
 for ref in refs.values():
     if ref.name != "":
@@ -266,6 +266,11 @@ def check_unittest_skip():
     assert "@unittest.skip" in refs
     assert find_subitem(refs["unittest"], "@unittest.skip")
     
+def check_utcnow():
+    assert "datetime.datetime.utcnow" in refs
+    assert find_subitem(refs["datetime.datetime"], "datetime.datetime.utcnow")
+    
+check_utcnow()
 check_urllib_parse()
 check_unittest_mock()
 check_urllib()
