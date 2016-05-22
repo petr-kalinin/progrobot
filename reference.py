@@ -2,6 +2,7 @@
 import pymongo
 import re
 import html
+from pprint import pprint
 
 from html2tele import html2tele
 
@@ -39,6 +40,8 @@ def search_one(query):
         for doc in cursor:
             ref = db.reference.find({"_id" : doc["reference_id"]})
             for res in ref:
+                print("reference returns")
+                pprint(res)
                 subitems = [html2tele("<code>{0}</code> : {1}".format(*x)) for x in res["subitems"]]
                 result = ""
                 if res["module"]:

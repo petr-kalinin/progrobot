@@ -101,7 +101,8 @@ def parse_file(filename, refs):
                 refs[currentName].full += tag
             tag = tag.next_element
             continue
-        #print(currentName, tag.name, "`"+refs[currentName].short+"`" if currentName else "")
+        #if currentName == "pprint.pprint":
+        #    print(currentName, tag.name, "`"+refs[currentName].full+"`", "\n\n")
         if hasclass(tag, ["sphinxsidebar"]):
             break
         elif hasclass(tag, ["section", "seealso"]):
@@ -124,7 +125,12 @@ def parse_file(filename, refs):
                     if can_be_short(text):
                         refs[currentName].short = "".join(str(x) for x in tag.contents)
                 refs[currentName].full += str(tag)
-            tag = tag.next_sibling if tag.next_sibling else tag.next_element
+            while not tag.next_sibling and tag.parent:
+                tag = tag.parent
+            if tag.next_sibling:
+                tag = tag.next_sibling
+            else:
+                break
         else:
             tag = tag.next_element
     return refs
@@ -206,7 +212,7 @@ for directory, subdirs, files in os.walk("."):
 #process_file("3/library/datetime.html", refs)
 #process_file("3/library/re.html", refs)
 #process_file("3/library/json.html", refs)
-#process_file("3/library/unittest.html", refs)
+#process_file("3/library/pprint.html", refs)
 
 finalize(refs)
 
@@ -270,6 +276,11 @@ def check_utcnow():
     assert "datetime.datetime.utcnow" in refs
     assert find_subitem(refs["datetime.datetime"], "datetime.datetime.utcnow")
     
+def check_pprint():
+    assert "pprint.pprint" in refs
+    assert_ends_with(refs["pprint.pprint"].full, "</pre>")
+    
+check_pprint()
 check_utcnow()
 check_urllib_parse()
 check_unittest_mock()
