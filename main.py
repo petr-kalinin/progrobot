@@ -12,6 +12,7 @@ import pymongo
 
 import stackoverflow
 import reference
+import utils
 
 client = pymongo.MongoClient()
 db = client.requests
@@ -36,6 +37,8 @@ You can also search StackOverflow by starting your request with /so command. For
 
 The bot is ⓒ Petr Kalinin, GNU AGPL, <a href="https://github.com/petr-kalinin/progrobot">github.com/petr-kalinin/progrobot</a>
 """
+
+MAX_LEN = 4096
 
 class YourBot(telepot.Bot):
     def __init__(self, *args, **kwargs):
@@ -73,7 +76,11 @@ class YourBot(telepot.Bot):
                               "then prefix your request with /so command: \n" +
                               "/so " + query)
             answer = re.sub(r'\n(\s*\n+)', '\n\n', answer)
+            if len(answer) > MAX_LEN:
+                answer = utils.short_to_length(answer, MAX_LEN - 100)
+                answer = answer + "\n\n" + "... (The answer is long, type /cont to continue)"
             print(answer)
+            print(len(answer))
             self.sendMessage(chat_id, answer, parse_mode="HTML", **additional_parameters)
         except Exception as e:
             self.sendMessage(chat_id, "Error: " + str(type(e)) + ": " + str(e))

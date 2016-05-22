@@ -7,6 +7,8 @@ import bs4
 import itertools
 from bs4 import BeautifulSoup
 
+import utils
+
 class ReferenceItem:
     def __init__(self):
         self.name = ""
@@ -160,39 +162,13 @@ def process_file(filename, refs):
     print(".", end="", flush=True)
     parse_file(filename, refs)
     
-def first_sentence(text):
-    def is_balanced(text):
-        for pair in ['()', '“”']:
-            if text.count(pair[0]) != text.count(pair[1]):
-                return False
-        return True
-    
-    MAX_SHORT_LEN = 1000
-    html = "<html><body><div>" + text + "</div></body></html>"
-    soup = BeautifulSoup(html, 'lxml').div
-    res = ""
-    for el in soup.children:
-        if isinstance(el, bs4.element.NavigableString) and ('.' in el):
-            for ch in el:
-                res += ch
-                if ch == '.' and is_balanced(res):
-                    return res
-                if el in ' ,!?()[]:;' and len(res) > MAX_SHORT_LEN:
-                    return res + "..."
-        else:
-            res += str(el)
-        if len(res) > MAX_SHORT_LEN:
-            return res + "..."
-        el = el.next_sibling
-    return res
-
 def finalize(refs):
     for ref_name, ref in refs.items():
         if ref.name == "":
             ref.name = ref_name
         new_subitems = []
         for item in ref.subitems:
-            new_subitems.append((item[0], first_sentence(refs[item[0]].short)))
+            new_subitems.append((item[0], utils.first_sentence(refs[item[0]].short)))
         ref.subitems = new_subitems
     
 os.chdir("../raw_data/python3/docs.python.org")
@@ -280,11 +256,11 @@ def check_pprint():
     assert "pprint.pprint" in refs
     assert_ends_with(refs["pprint.pprint"].full, "</pre>")
     
+check_re()
 check_pprint()
 check_utcnow()
 check_urllib_parse()
 check_unittest_mock()
 check_urllib()
-check_re()
 check_unittest()
 check_unittest_skip()

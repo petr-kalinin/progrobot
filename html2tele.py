@@ -33,6 +33,11 @@ class _HTMLToText(HTMLParser):
         self.last_text = []
         
     def push_tag(self, tag_str):
+        print("push_tag", tag_str)
+        if len(tag_str) >= 2 and tag_str[1] != "/":
+            self.tag_count += 1
+        else:
+            self.tag_count -= 1
         self.process_last_text()
         self.buf.append(tag_str)
         
@@ -44,13 +49,14 @@ class _HTMLToText(HTMLParser):
         self.buf.append("\n" * count)
 
     def handle_starttag(self, tag, attrs):
-        self.tag_count += 1
         if self.hide_output:
             return
-        elif tag in SUPPORTED_TAGS and (self.tag_count == 1):
+        if self.tag_count != 0:
+            self.tag_count += 1
+        if tag in SUPPORTED_TAGS and (self.tag_count == 0):
             self.push_tag("<"+tag+">")
             self.current_tag = tag
-        elif tag == "a" and (self.tag_count == 1):
+        elif tag == "a" and (self.tag_count == 0):
             href = find_href(attrs)
             self.push_tag("<a href='{0}'>".format(html.escape(href, quote=True)))
             self.current_tag = "a"
@@ -71,7 +77,8 @@ class _HTMLToText(HTMLParser):
             self.current_tag = None
         elif tag in ('script', 'style'):
             self.hide_output = False
-        self.tag_count -= 1
+        if self.tag_count != 0:
+            self.tag_count -= 1
 
     def handle_data(self, text):
         if not self.hide_output:
@@ -104,9 +111,21 @@ def html2tele(html):
 
 class TestHtml2Tele(unittest.TestCase):
 
+    #@unittest.skip
     def test_spaces_around_tags(self):
         html = "The <a href=''>urllib.error</a> module"
         expected = "The <a href=''>urllib.error</a> module"
+        self.assertEqual(html2tele(html), expected)
+
+    #@unittest.skip
+    def test_code_in_other(self):
+        html = "<div><code>tmp</code></div>"
+        expected = "\n\n<code>tmp</code>\n\n"
+        self.assertEqual(html2tele(html), expected)
+
+    def test_code_in_pre(self):
+        html = "<pre><code>tmp</code></pre>"
+        expected = "<pre>tmp</pre>"
         self.assertEqual(html2tele(html), expected)
 
 if __name__ == '__main__':
