@@ -4,7 +4,9 @@ import re
 import time
 import threading
 import random
+import asyncio
 import telepot
+from telepot.async.delegate import per_chat_id, create_open
 from pprint import pprint
 from datetime import datetime
 import traceback
@@ -40,12 +42,12 @@ The bot is ⓒ Petr Kalinin, GNU AGPL, <a href="https://github.com/petr-kalinin/
 
 MAX_LEN = 4096
 
-class YourBot(telepot.Bot):
-    def __init__(self, *args, **kwargs):
-        super(YourBot, self).__init__(*args, **kwargs)
-        self._answerer = telepot.helper.Answerer(self)
-        self._message_with_inline_keyboard = None
+class ProgroBot(telepot.async.helper.ChatHandler):
+    def __init__(self, seed_tuple, timeout):
+        super(ProgroBot, self).__init__(seed_tuple, timeout)
+        self._count = 0
 
+    @asyncio.coroutine
     def on_chat_message(self, msg):
         content_type, chat_type, chat_id = telepot.glance(msg)
         print('Chat:', content_type, chat_type, chat_id)
@@ -53,7 +55,7 @@ class YourBot(telepot.Bot):
         requests.insert({"request": msg, "time": datetime.now().isoformat()})
 
         if content_type != 'text':
-            return
+            yield
         try:
             query = msg["text"]
             additional_parameters = {}
@@ -81,7 +83,7 @@ class YourBot(telepot.Bot):
                 answer = answer + "\n\n" + "... (The answer is long, type /cont to continue)"
             print(answer)
             print(len(answer))
-            self.sendMessage(chat_id, answer, parse_mode="HTML", **additional_parameters)
+            yield from self.sender.sendMessage(answer, parse_mode="HTML", **additional_parameters)
         except Exception as e:
             self.sendMessage(chat_id, "Error: " + str(type(e)) + ": " + str(e))
             traceback.print_exc()
@@ -89,10 +91,12 @@ class YourBot(telepot.Bot):
 
 TOKEN = sys.argv[1]  # get token from command-line
 
-bot = YourBot(TOKEN)
-bot.message_loop()
+bot = telepot.async.DelegatorBot(TOKEN, [
+    (per_chat_id(), create_open(ProgroBot, timeout=10)),
+])
+
+loop = asyncio.get_event_loop()
+loop.create_task(bot.message_loop())
 print('Listening ...')
 
-# Keep the program running.
-while 1:
-    time.sleep(10)
+loop.run_forever()
