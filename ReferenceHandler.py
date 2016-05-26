@@ -5,10 +5,26 @@ import html
 from pprint import pprint
 
 from html2tele import html2tele
+from Handler import Handler
 
 client = pymongo.MongoClient()
 db_cpp = client.cpp
 db_python3 = client.python3
+
+class ReferenceHandler(Handler):
+    def handle(self, query, state):
+        answer = search(query)
+        if not answer:
+            answer = ("No reference found for your request. " +
+                        "Make sure you spelled all tokens in your request propery. " +
+                        "If you were asking about a specific method or function of some " +
+                        "module or class, you can make your request more generic by directly asking " +
+                        "about that module or class.\n\n" +
+                        "If you were intending to search StackOverflow for a question, " +
+                        "then prefix your request with /so command: \n" +
+                        "/so " + query)
+        return self.format_answer(answer)
+            
 
 def search(query):
     ans = search_one(query)

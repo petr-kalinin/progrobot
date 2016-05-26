@@ -4,7 +4,17 @@ import urllib.request
 import urllib.parse
 import json
 import gzip
+
 from html2tele import html2tele
+from Handler import Handler
+
+class StackoverflowHandler(Handler):
+    def handle(self, query, state):
+        if query != "":
+            answer = search(query)
+        else:
+            answer = "Please follow /so command by actual request to StackOverflow"
+        return self.format_answer(answer)
 
 def send_request(method, parameters):
     request_string = urllib.parse.urlencode(parameters)
