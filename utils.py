@@ -40,14 +40,12 @@ def first_sentence(text):
     MAX_SHORT_LEN = 1000
     return next(sentences(text, True, MAX_SHORT_LEN))
 
-def short_to_length(text, length, allow_noncomplete_sentence=False, min_part_length=200):
+def short_to_length(text, length):
     if len(text) < length:
         return text
     result = ""
-    for sent in sentences(text, False):
-        if len(result) + len(sent) > length:
-            break
-        result += sent
-    if result == "" and not allow_noncomplete_sentence:
-        return short_to_length(text, length, True)
-    return result
+    sent = list(sentences(text))
+    for i in range(len(sent)):
+        if len("".join(sent[:i])) > length:
+            return ("".join(sent[:i-1]), "".join(sent[i-1:]))
+    return ("".join(sent), None)

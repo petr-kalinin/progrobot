@@ -1,6 +1,7 @@
 from HelpHandler import HelpHandler
 from ReferenceHandler import ReferenceHandler
 from StackoverflowHandler import StackoverflowHandler
+from ContinueHandler import ContinueStartHandler
 
 class State:
     def __init__(self):
@@ -18,8 +19,8 @@ class State:
         
     def set_handler(self, command, handler):
         if handler:
-            self.handlers[command] = handler
-        else:
+            self.handlers[command] = ContinueStartHandler(handler)
+        elif command in self.handlers:
             del self.handlers[command]
             
     def handle(self, command, query):

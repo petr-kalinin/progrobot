@@ -104,6 +104,7 @@ def html2tele(html):
     parser.feed(html)
     parser.close()
     result = parser.get_text()
+    result = re.sub(r'\n(\s*\n+)', '\n\n', result)
     print("html2tele result: ", result)
     return result
 

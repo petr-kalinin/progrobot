@@ -13,13 +13,10 @@ import traceback
 import pymongo
 
 from State import State
-import utils
 
 client = pymongo.MongoClient()
 db = client.requests
 requests = db.requests
-
-MAX_LEN = 4096
 
 class ProgroBot(telepot.async.helper.ChatHandler):
     def __init__(self, seed_tuple, timeout):
@@ -49,10 +46,6 @@ class ProgroBot(telepot.async.helper.ChatHandler):
             print("Current state: ", self.state)
             print("command:", command, "query:", query)
             answer = self.state.handle(command, query)
-            answer["text"] = re.sub(r'\n(\s*\n+)', '\n\n', answer["text"])
-            if len(answer["text"]) > MAX_LEN:
-                answer["text"] = utils.short_to_length(answer["text"], MAX_LEN - 100)
-                answer["text"] = answer["text"] + "\n\n" + "... (The answer is long, type /cont to continue)"
             print(answer)
             print(len(answer["text"]))
             yield from self.sender.sendMessage(parse_mode="HTML", **answer)
