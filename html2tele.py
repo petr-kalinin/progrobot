@@ -29,11 +29,13 @@ class _HTMLToText(HTMLParser):
         text = "".join(self.last_text)
         if not self.current_tag in CODE_TAGS:
             text = re.sub("\s+", " ", text)
+        if self.current_tag == "pre":
+            text = text.strip("\n")
         self.buf.append(text)
         self.last_text = []
         
     def push_tag(self, tag_str):
-        print("push_tag", tag_str)
+        #print("push_tag", tag_str)
         if len(tag_str) >= 2 and tag_str[1] != "/":
             self.tag_count += 1
         else:
@@ -99,13 +101,13 @@ class _HTMLToText(HTMLParser):
         return res
 
 def html2tele(html):
-    print("html2tele input: ", html)
+    #print("html2tele input: ", html)
     parser = _HTMLToText()
     parser.feed(html)
     parser.close()
     result = parser.get_text()
     result = re.sub(r'\n(\s*\n+)', '\n\n', result)
-    print("html2tele result: ", result)
+    #print("html2tele result: ", result)
     return result
 
 #----------
@@ -127,6 +129,11 @@ class TestHtml2Tele(unittest.TestCase):
     def test_code_in_pre(self):
         html = "<pre><code>tmp</code></pre>"
         expected = "<pre>tmp</pre>"
+        self.assertEqual(html2tele(html), expected)
+
+    def test_endl_in_pre(self):
+        html = "<p>a</p><pre>\n tm \np \n</pre>"
+        expected = "\n\na\n\n<pre> tm \np </pre>"
         self.assertEqual(html2tele(html), expected)
 
 if __name__ == '__main__':
