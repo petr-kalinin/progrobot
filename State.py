@@ -1,4 +1,6 @@
+from StartHandler import StartHandler
 from HelpHandler import HelpHandler
+from LicenseHandler import LicenseHandler
 from ReferenceHandler import ReferenceHandler
 from StackoverflowHandler import StackoverflowHandler
 from ContinueHandler import ContinueStartHandler
@@ -6,7 +8,9 @@ from ContinueHandler import ContinueStartHandler
 class State:
     def __init__(self):
         self.handlers = {}
+        self.set_handler("/start", StartHandler())
         self.set_handler("/help", HelpHandler())
+        self.set_handler("/license", LicenseHandler())
         self.set_handler("/so", StackoverflowHandler())
         self.set_handler(None, ReferenceHandler())
         

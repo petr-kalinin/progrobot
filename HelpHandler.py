@@ -17,7 +17,7 @@ You can omit some of first tokens, for example, "vector insert" also works. You 
 
 You can also search StackOverflow by starting your request with /so command. For example, "/so javascript print to console".
 
-The bot is ⓒ Petr Kalinin, GNU AGPL, <a href="https://github.com/petr-kalinin/progrobot">github.com/petr-kalinin/progrobot</a>
+The bot is ⓒ Petr Kalinin. The bot's code is open-sources under GNU AGPL, type /license for more information.
 """
 
 class HelpHandler(Handler):
