@@ -76,6 +76,15 @@ def can_be_short(text):
         return False
     return True
 
+
+def next_tag(tag):
+    while not tag.next_sibling and tag.parent:
+        tag = tag.parent
+    if tag.next_sibling:
+        return tag.next_sibling
+    else:
+        return None
+
     
 def parse_file(filename, refs):
     base_href = "https://docs.python.org/" + filename[2:]
@@ -91,19 +100,20 @@ def parse_file(filename, refs):
         create_ref(refs, currentName, module, base_href)
     tag = soup.h1.next_sibling
     while tag is not None:
-        #print("Tag: ", tag)
+        #print("Tag: `", tag, "`")
         if isinstance(tag, bs4.element.Comment):
             tag = tag.next_element
             continue
         if isinstance(tag, bs4.element.NavigableString):
-            if tag.strip() != "" and currentName:
+            text = tag.strip()
+            if text != "" and currentName:
                 if refs[currentName].short == "":
-                    if can_be_short(tag):
-                        refs[currentName].short = tag
-                refs[currentName].full += tag
+                    if can_be_short(text):
+                        refs[currentName].short = text
+                refs[currentName].full += text
             tag = tag.next_element
             continue
-        #if currentName == "pprint.pprint":
+        #if currentName:
         #    print(currentName, tag.name, "`"+refs[currentName].full+"`", "\n\n")
         if hasclass(tag, ["sphinxsidebar"]):
             break
@@ -120,18 +130,20 @@ def parse_file(filename, refs):
                 create_ref(refs, currentName, module, base_href)
                 refs[currentName].usage = usage[:-1].strip()
             tag = tag.dd.next_element
-        elif tag.name in ("p", "pre", 'li', 'dt', 'dd'):
+        elif tag.name in ('p', 'pre', 'code', 'li', 'dt', 'dd', 'tr', 'td', 'th'):
+            if (tag.name == 'p' 
+                    and len(tag.contents) == 1 
+                    and isinstance(tag.contents[0], bs4.element.Tag)
+                    and tag.contents[0].name=="strong"):
+                currentName = None
             if currentName:
                 if refs[currentName].short == "":
                     text = "".join(tag.strings)
                     if can_be_short(text):
                         refs[currentName].short = "".join(str(x) for x in tag.contents)
                 refs[currentName].full += str(tag)
-            while not tag.next_sibling and tag.parent:
-                tag = tag.parent
-            if tag.next_sibling:
-                tag = tag.next_sibling
-            else:
+            tag = next_tag(tag)
+            if not tag:
                 break
         else:
             tag = tag.next_element
@@ -185,7 +197,7 @@ refs = {}
 for directory, subdirs, files in os.walk("."):
     for f in files:
         process_file(os.path.join(directory, f), refs)
-#process_file("3/library/datetime.html", refs)
+#process_file("3/library/itertools.html", refs)
 #process_file("3/library/re.html", refs)
 #process_file("3/library/json.html", refs)
 #process_file("3/library/pprint.html", refs)
@@ -256,6 +268,10 @@ def check_pprint():
     assert "pprint.pprint" in refs
     assert_ends_with(refs["pprint.pprint"].full, "</pre>")
     
+def check_itertools():
+    assert_ends_with(refs['itertools'].full, 'vector2))</span></code>.</p>')
+    
+check_itertools()
 check_re()
 check_pprint()
 check_utcnow()

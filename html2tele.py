@@ -62,8 +62,10 @@ class _HTMLToText(HTMLParser):
             href = find_href(attrs)
             self.push_tag("<a href='{0}'>".format(html.escape(href, quote=True)))
             self.current_tag = "a"
-        elif tag in ('p', 'br', 'div', 'table','dt','dd','li'):
+        elif tag in ('p', 'br', 'div', 'table', 'dt', 'dd', 'li', 'tr'):
             self.push_newlines(2)
+        elif tag == 'td':
+            self.push_newlines(1)
         elif tag in ('script', 'style'):
             self.hide_output = True
 
@@ -72,7 +74,7 @@ class _HTMLToText(HTMLParser):
             self.push_newlines(2)
 
     def handle_endtag(self, tag):
-        if tag in ('p', 'div', 'table'):
+        if tag in ('p', 'div', 'table','tr'):
             self.push_newlines(2)
         elif (tag in SUPPORTED_TAGS or tag == "a") and (self.tag_count == 1):
             self.push_tag("</" + tag + ">")
@@ -93,7 +95,7 @@ class _HTMLToText(HTMLParser):
 
     def handle_charref(self, name):
         if not self.hide_output:
-            self.push_text("&" + name + ";")
+            self.push_text("&#" + name + ";")
 
     def get_text(self):
         self.push_tag("")
@@ -101,13 +103,13 @@ class _HTMLToText(HTMLParser):
         return res
 
 def html2tele(html):
-    #print("html2tele input: ", html)
+    print("html2tele input: ", html)
     parser = _HTMLToText()
     parser.feed(html)
     parser.close()
     result = parser.get_text()
     result = re.sub(r'\n(\s*\n+)', '\n\n', result)
-    #print("html2tele result: ", result)
+    print("html2tele result: ", result)
     return result
 
 #----------
@@ -134,6 +136,21 @@ class TestHtml2Tele(unittest.TestCase):
     def test_endl_in_pre(self):
         html = "<p>a</p><pre>\n tm \np \n</pre>"
         expected = "\n\na\n\n<pre> tm \np </pre>"
+        self.assertEqual(html2tele(html), expected)
+
+    def test_lt(self):
+        html = "&lt;&#60;"
+        expected = "&#60;&#60;"
+        self.assertEqual(html2tele(html), expected)
+
+    def test_trtdth(self):
+        html = "<tr><th>a</th><td>b</td></tr><tr><td>c</td><td>e</td></tr>"
+        expected = "\n\na\nb\n\nc\ne\n\n"
+        self.assertEqual(html2tele(html), expected)
+
+    def test_endl_after_code(self):
+        html = "<p><code>a</code></p>b<code>c</code>d"
+        expected = "\n\n<code>a</code>\n\nb<code>c</code>d"
         self.assertEqual(html2tele(html), expected)
 
 if __name__ == '__main__':

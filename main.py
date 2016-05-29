@@ -57,7 +57,7 @@ class ProgroBot(telepot.async.helper.ChatHandler):
 TOKEN = sys.argv[1]  # get token from command-line
 
 bot = telepot.async.DelegatorBot(TOKEN, [
-    (per_chat_id(), create_open(ProgroBot, timeout=10)),
+    (per_chat_id(), create_open(ProgroBot, timeout=300)),
 ])
 
 loop = asyncio.get_event_loop()
