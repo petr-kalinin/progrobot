@@ -103,13 +103,13 @@ class _HTMLToText(HTMLParser):
         return res
 
 def html2tele(html):
-    print("html2tele input: ", html)
+    #print("html2tele input: ", html)
     parser = _HTMLToText()
     parser.feed(html)
     parser.close()
     result = parser.get_text()
     result = re.sub(r'\n(\s*\n+)', '\n\n', result)
-    print("html2tele result: ", result)
+    #print("html2tele result: ", result)
     return result
 
 #----------

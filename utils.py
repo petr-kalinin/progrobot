@@ -1,13 +1,15 @@
 import bs4
 from bs4 import BeautifulSoup
 
+NONCOMPLETE_SENTENCE_ENDS = ',!?)]:;'
+
+def is_balanced(text):
+    for pair in ['()', '“”']:
+        if text.count(pair[0]) != text.count(pair[1]):
+            return False
+    return True
+
 def sentences(text, allow_noncomplete_sentence=False, min_len_for_noncomplele=0):
-    def is_balanced(text):
-        for pair in ['()', '“”']:
-            if text.count(pair[0]) != text.count(pair[1]):
-                return False
-        return True
-    
     html = "<html><body><div>" + text + "</div></body></html>"
     #print("input:", html)
     soup = BeautifulSoup(html, 'lxml').div
@@ -21,7 +23,7 @@ def sentences(text, allow_noncomplete_sentence=False, min_len_for_noncomplele=0)
                     yield res
                     res = ""
                 if (allow_noncomplete_sentence 
-                    and el in ' ,!?()[]:;' and 
+                    and el in NONCOMPLETE_SENTENCE_ENDS and 
                     len(res) > min_len_for_noncomplele):
                     #print("res2:" , res)
                     yield res
@@ -43,9 +45,39 @@ def first_sentence(text):
 def short_to_length(text, length):
     if len(text) < length:
         return text
-    result = ""
-    sent = list(sentences(text))
-    for i in range(len(sent)):
-        if len("".join(sent[:i])) > length:
-            return ("".join(sent[:i-1]), "".join(sent[i-1:]))
-    return ("".join(sent), None)
+    html = "<html><body><div>" + text + "</div></body></html>"
+    #print("input:", html)
+    soup = BeautifulSoup(html, 'lxml').div
+    res = ""
+    bestScore = 0
+    bestRes = ""
+    for el in soup.children:
+        if isinstance(el, bs4.element.NavigableString):
+            for ch in el:
+                res += ch
+                if is_balanced(res) and len(res) < length:
+                    currentScore = None
+                    if len(res)>=2 and res[-2:] == "\n\n":
+                        currentScore = 1
+                    elif res[-1] == "\n":
+                        currentScore = 0.5
+                    elif res[-1] == ".":
+                        currentScore = 0.3
+                    elif res[-1] in ',!?)]:;':
+                        currentScore = 0.1
+                    if currentScore:
+                        currentScore *= len(res)
+                        #print("Split attempt: ", res[-20:], currentScore, len(res), '`'+res[-2:]+'`')
+                        if currentScore > bestScore:
+                            bestScore = currentScore
+                            bestRes = res
+        else:
+            res += str(el)
+        if is_balanced(res) and len(res) < length:
+            currentScore = len(res) * 0.05
+            #print("Split attempt: ", res[-20:], currentScore, len(res))
+            if currentScore > bestScore:
+                bestScore = currentScore
+                bestRes = res
+        el = el.next_sibling
+    return (bestRes, res[len(bestRes):])

@@ -4,6 +4,7 @@ import utils
 from Handler import Handler
 
 MAX_LEN = 4096
+THE_ANSWER_IS_LONG = "\n\n... (The answer is long, type /cont to continue)"
 
 class ContinueStartHandler(Handler):
     def __init__(self, base_handler):
@@ -13,10 +14,10 @@ class ContinueStartHandler(Handler):
         answer = self.base_handler.handle(query, state)
         text = answer["text"]
         if len(text) > MAX_LEN:
-            result = utils.short_to_length(text, MAX_LEN - 100)
+            result = utils.short_to_length(text, MAX_LEN - len(THE_ANSWER_IS_LONG))
             text = result[0]
             if result[1]:
-                text = text + "\n\n" + "... (The answer is long, type /cont to continue)"
+                text = text + THE_ANSWER_IS_LONG
                 new_answer = copy.deepcopy(answer)
                 new_answer["text"] = result[1]
                 state.set_handler("/cont", ContinueHandler(new_answer))
