@@ -53,7 +53,7 @@ class _HTMLToText(HTMLParser):
     def handle_starttag(self, tag, attrs):
         if self.hide_output:
             return
-        if self.tag_count != 0:
+        if self.tag_count != 0 and tag != "img": # img is always self-closed
             self.tag_count += 1
         if tag in SUPPORTED_TAGS and (self.tag_count == 0):
             self.push_tag("<"+tag+">")
@@ -151,6 +151,11 @@ class TestHtml2Tele(unittest.TestCase):
     def test_endl_after_code(self):
         html = "<p><code>a</code></p>b<code>c</code>d"
         expected = "\n\n<code>a</code>\n\nb<code>c</code>d"
+        self.assertEqual(html2tele(html), expected)
+
+    def test_img(self):
+        html = '<a href="foo"><img src="qwe"></a>'
+        expected = "<a href='foo'></a>"
         self.assertEqual(html2tele(html), expected)
 
 if __name__ == '__main__':
