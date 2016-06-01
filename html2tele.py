@@ -7,7 +7,6 @@ import re
 import unittest
 
 SUPPORTED_TAGS = ('b', 'strong', 'i', 'em', 'code', 'pre')
-CODE_TAGS = ('code', 'pre')
 
 def find_href(attrs):
     for attr in attrs:
@@ -27,7 +26,7 @@ class _HTMLToText(HTMLParser):
         
     def process_last_text(self):
         text = "".join(self.last_text)
-        if not self.current_tag in CODE_TAGS:
+        if self.current_tag != "pre":
             text = re.sub("\s+", " ", text)
         if self.current_tag == "pre":
             text = text.strip("\n")
@@ -162,6 +161,11 @@ class TestHtml2Tele(unittest.TestCase):
     def test_img_in_a(self):
         html = '<a href="foo"><img src="qwe"></a>'
         expected = ""
+        self.assertEqual(html2tele(html), expected)
+
+    def test_endl_in_code(self):
+        html = '<code>ab\nc</code>'
+        expected = "<code>ab c</code>"
         self.assertEqual(html2tele(html), expected)
 
 if __name__ == '__main__':
