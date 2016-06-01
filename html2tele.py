@@ -40,6 +40,10 @@ class _HTMLToText(HTMLParser):
             self.tag_count += 1
         else:
             self.tag_count -= 1
+        if tag_str == "</a>" and not self.last_text:
+            assert self.buf[-1].startswith("<a ")
+            self.buf.pop()
+            return
         self.process_last_text()
         self.buf.append(tag_str)
         
@@ -109,6 +113,8 @@ def html2tele(html):
     parser.close()
     result = parser.get_text()
     result = re.sub(r'\n(\s*\n+)', '\n\n', result)
+    result = re.sub(r' +<pre>', '<pre>', result)
+    result = re.sub(r'</pre> +', '</pre>', result)
     #print("html2tele result: ", result)
     return result
 
@@ -133,9 +139,9 @@ class TestHtml2Tele(unittest.TestCase):
         expected = "<pre>tmp</pre>"
         self.assertEqual(html2tele(html), expected)
 
-    def test_endl_in_pre(self):
-        html = "<p>a</p><pre>\n tm \np \n</pre>"
-        expected = "\n\na\n\n<pre> tm \np </pre>"
+    def test_spaces_and_endl_in_pre(self):
+        html = "<p>a</p> <pre>\n tm \np \n</pre> q"
+        expected = "\n\na\n\n<pre> tm \np </pre>q"
         self.assertEqual(html2tele(html), expected)
 
     def test_lt(self):
@@ -153,9 +159,9 @@ class TestHtml2Tele(unittest.TestCase):
         expected = "\n\n<code>a</code>\n\nb<code>c</code>d"
         self.assertEqual(html2tele(html), expected)
 
-    def test_img(self):
+    def test_img_in_a(self):
         html = '<a href="foo"><img src="qwe"></a>'
-        expected = "<a href='foo'></a>"
+        expected = ""
         self.assertEqual(html2tele(html), expected)
 
 if __name__ == '__main__':
