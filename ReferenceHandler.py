@@ -58,11 +58,12 @@ def search_one(query):
             for res in ref:
                 #print("reference returns")
                 #pprint(res)
-                subitems = [html2tele("<code>{0}</code> : {1}".format(*x)) for x in res["subitems"]]
+                subitems = [(html.escape(x[0]), x[1]) for x in res["subitems"]]
+                subitems = [html2tele("<code>{0}</code> : {1}".format(*x)) for x in subitems]
                 result = ""
                 if res["module"]:
                     result += "<code>" + html.escape(res["module"]) + "</code>\n"
-                result = result + "<b>" + res["name"] + "</b>\n\n"
+                result = result + "<b>" + html.escape(res["name"]) + "</b>\n\n"
                 if res["usage"]:
                     result += "<pre>" + html.escape(res["usage"]) + "</pre>\n\n"
                 result += (html2tele(res.get("full", "")) + "\n\n"

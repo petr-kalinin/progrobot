@@ -57,7 +57,7 @@ def make_usage(soup):
     elements = table.find_all(name="tbody")
     result = ""
     for element in elements:
-        codes = element.find_all(class_="cpp")
+        codes = element.find_all("code")
         result = result + "\n".join("".join(s for s in c.strings) for c in codes)
         version = element.find(string=re.compile(r'\s*\(\d+\)\s*'))
         if version:
@@ -113,8 +113,14 @@ def make_subitems(soup, filename):
         subitems.append((subitem, desc))
     return subitems
 
+def correct_code(soup):
+    for tag in soup(class_="mw-geshi"):
+        tag.name = "code"
+        tag.attrs = {}
+
 def parse_file(filename):
     soup = BeautifulSoup(open(filename), 'lxml')
+    correct_code(soup)
     ref = ReferenceItem()
     ref.href = "http://en.cppreference.com/w/cpp/" + filename
     ref.name = make_name(soup)
@@ -131,18 +137,35 @@ def process_file(filename, reference, index):
     ref = parse_file(filename)
     result = reference.insert_one(ref.to_dict())
     #print("insert: ", ref.to_dict())
-    names = ref.name.split("(")[0].split("<")[0].split(",")
+    corrector = 1
+    name = ref.name
+    match1 = re.match(r"Standard library header <(\w+)>", name)
+    if match1:
+        name = match1.group(1)
+        corrector = 0.1
+    #print("name: ", name)
+    # for vector<bool>, etc
+    name = re.sub(r"<(void|char|bool)>", r"::\1", name)
+    #print("name: ", name)
+    # for hash<Key>, etc
+    name = re.sub(r"<\w+>", "", name)
+    names = name.split("(")[0].split(",")
+    #print("name: ", name)
+    #print("names: ", names)
     for name in names:
         split_name = name.strip().split("::")
-        if len(split_name) > 3:
+        if len(split_name) > 6:
             print(split_name," --- ", ref.name)
         for i in range(len(split_name)):
             for perm in itertools.permutations(split_name[i:]):
                 subname = " ".join(perm)
+                #fix for std::vector<bool>
+                if subname == "bool":
+                    continue
                 doc = {
                     "reference_id" : result.inserted_id, 
                     "name" : subname,
-                    "relevance" : 1-i/len(split_name),
+                    "relevance" : (1-i/len(split_name)) * corrector,
                     "full_name" : ref.name
                     }
                 #print("index: ", doc)
@@ -161,6 +184,7 @@ for directory, subdirs, files in os.walk("."):
     for f in files:
         process_file(os.path.join(directory, f), reference, index)
 #process_file("container.html", reference, index)
+#process_file("container/vector_bool.html", reference, index)
 #process_file("container/vector.html", reference, index)
 #process_file("container/vector/insert.html", reference, index)
 
