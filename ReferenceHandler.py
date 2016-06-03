@@ -27,13 +27,19 @@ class ReferenceHandler(Handler):
             
 
 def search(query):
-    ans = search_one(query)
+    ans = search_with_split(query, r"\s+|\:\:+|\.+")
     if not ans:
-        ans = search_one(query.lower())
+        ans = search_with_split(query, r"[^a-zA-Z_+-]+")
+    return ans
+    
+def search_with_split(query, split_regexp):
+    ans = search_one(query, split_regexp)
+    if not ans:
+        ans = search_one(query.lower(), split_regexp)
     return ans
 
-def search_one(query):
-    query = re.split(r"[^a-zA-Z_+-]+", query)
+def search_one(query, split_regexp):
+    query = re.split(split_regexp, query)
     #print("Query: ", query)
     if len(query)>7:
         return None

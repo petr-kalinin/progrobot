@@ -149,7 +149,7 @@ def process_file(filename, reference, index):
     #print("name: ", name)
     # for hash<Key>, etc
     name = re.sub(r"<\w+>", "", name)
-    names = name.split("(")[0].split(",")
+    names = re.split(r"\([^)]", name)[0].split(",")
     #print("name: ", name)
     #print("names: ", names)
     for name in names:
