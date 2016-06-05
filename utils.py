@@ -1,5 +1,9 @@
+#!/usr/bin/python3
 import bs4
 from bs4 import BeautifulSoup
+from bs4.diagnose import diagnose
+
+import unittest
 
 NONCOMPLETE_SENTENCE_ENDS = ',!?)]:;'
 
@@ -45,14 +49,15 @@ def first_sentence(text):
 def short_to_length(text, length):
     if len(text) < length:
         return text
-    html = "<html><body><div>" + text + "</div></body></html>"
-    #print("input:", html)
-    soup = BeautifulSoup(html, 'lxml').div
+    html = "<html><body><div><pre>" + text + "</pre></div></body></html>"
+    soup = BeautifulSoup(html, 'lxml')
+    soup = soup.pre
     res = ""
     bestScore = 0
     bestRes = ""
     for el in soup.children:
         if isinstance(el, bs4.element.NavigableString):
+            #print("String '"+str(el)+"'")
             for ch in el:
                 res += ch
                 if is_balanced(res) and len(res) < length:
@@ -72,6 +77,7 @@ def short_to_length(text, length):
                             bestScore = currentScore
                             bestRes = res
         else:
+            #print("El: '"+str(el)+"'")
             res += str(el)
         if is_balanced(res) and len(res) < length:
             currentScore = len(res) * 0.05
@@ -79,5 +85,18 @@ def short_to_length(text, length):
             if currentScore > bestScore:
                 bestScore = currentScore
                 bestRes = res
+        #print("res:",repr(res))
         el = el.next_sibling
     return (bestRes, res[len(bestRes):])
+
+#----------
+
+class TestShortToLength(unittest.TestCase):
+
+    def test_newlines(self):
+        html = "<b>a</b>\n\n<b>q</b>\n\nqwe"
+        expected = ("<b>a</b>\n\n<b>q</b>\n\n", "qwe")
+        self.assertEqual(short_to_length(html, len(html)-2), expected)
+
+if __name__ == '__main__':
+    unittest.main()

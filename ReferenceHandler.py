@@ -75,5 +75,6 @@ def search_one(query, split_regexp):
                 result += (html2tele(res.get("full", "")) + "\n\n"
                         + "\n".join(subitems) 
                         + "\n\n" + res["copyright"])
+                #print("ReferenceHandler result: " + result)
                 return result
     

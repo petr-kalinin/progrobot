@@ -57,7 +57,8 @@ def make_usage(soup):
     elements = table.find_all(name="tbody")
     result = ""
     for element in elements:
-        codes = element.find_all("code")
+        codes = element.find_all(class_="cpp")
+        #print(codes)
         result = result + "\n".join("".join(s for s in c.strings) for c in codes)
         version = element.find(string=re.compile(r'\s*\(\d+\)\s*'))
         if version:
@@ -120,12 +121,12 @@ def correct_code(soup):
 
 def parse_file(filename):
     soup = BeautifulSoup(open(filename), 'lxml')
-    correct_code(soup)
     ref = ReferenceItem()
     ref.href = "http://en.cppreference.com/w/cpp/" + filename
     ref.name = make_name(soup)
     ref.module = make_module(soup)
     ref.usage = make_usage(soup)
+    correct_code(soup)  # only after usage
     ref.short, ref.full, ref.fullest = make_desc(soup)
     ref.subitems = make_subitems(soup, filename)
     ref.copyright = "ⓒ CppReference authors, CC-BY-SA 3.0 / GFDL, " + ref.href
@@ -187,4 +188,5 @@ for directory, subdirs, files in os.walk("."):
 #process_file("container/vector_bool.html", reference, index)
 #process_file("container/vector.html", reference, index)
 #process_file("container/vector/insert.html", reference, index)
+#process_file("experimental/fs/path.html", reference, index)
 
