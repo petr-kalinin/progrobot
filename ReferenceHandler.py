@@ -33,9 +33,7 @@ def search(query):
     return ans
     
 def search_with_split(query, split_regexp):
-    ans = search_one(query, split_regexp)
-    if not ans:
-        ans = search_one(query.lower(), split_regexp)
+    ans = search_one(query.lower(), split_regexp)
     return ans
 
 def search_one(query, split_regexp):
@@ -55,8 +53,9 @@ def search_one(query, split_regexp):
         query.remove("python")
     else:
         dbs = [db_cpp, db_python3]
-    query = " ".join(filter(lambda x: x, query))
-    #print("Query: ", query)
+    #print("Query: '", query, "'")
+    query = " ".join(sorted(filter(lambda x: x, query)))
+    #print("Query: '", query, "'")
     for db in dbs:
         cursor = db.index.find({"name" : query}, sort=[("relevance", pymongo.DESCENDING)], limit=1)
         for doc in cursor:

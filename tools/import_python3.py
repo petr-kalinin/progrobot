@@ -158,16 +158,16 @@ def insert_ref(ref, reference, index):
         if len(split_name) > 3:
             print(split_name," --- ", ref.name)
         for i in range(len(split_name)):
-            for perm in itertools.permutations(split_name[i:]):
-                subname = " ".join(perm)
-                doc = {
-                    "reference_id" : result.inserted_id,
-                    "name" : subname,
-                    "relevance" : 1-i/len(split_name),
-                    "full_name" : ref.name
-                    }
-                #print("index: ", doc)
-                index.insert_one(doc)
+            perm = [x.lower() for x in split_name[i:]]
+            subname = " ".join(sorted(perm))
+            doc = {
+                "reference_id" : result.inserted_id,
+                "name" : subname,
+                "relevance" : 1-i/len(split_name),
+                "full_name" : ref.name
+                }
+            print("index: ", doc)
+            index.insert_one(doc)
     
 def process_file(filename, refs):
     print("\n-----------\n" + filename)
@@ -201,6 +201,7 @@ for directory, subdirs, files in os.walk("."):
 #process_file("3/library/re.html", refs)
 #process_file("3/library/json.html", refs)
 #process_file("3/library/pprint.html", refs)
+#process_file("3/library/unittest.html", refs)
 
 finalize(refs)
 

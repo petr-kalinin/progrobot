@@ -158,19 +158,19 @@ def process_file(filename, reference, index):
         if len(split_name) > 6:
             print(split_name," --- ", ref.name)
         for i in range(len(split_name)):
-            for perm in itertools.permutations(split_name[i:]):
-                subname = " ".join(perm)
-                #fix for std::vector<bool>
-                if subname == "bool":
-                    continue
-                doc = {
-                    "reference_id" : result.inserted_id, 
-                    "name" : subname,
-                    "relevance" : (1-i/len(split_name)) * corrector,
-                    "full_name" : ref.name
-                    }
-                #print("index: ", doc)
-                index.insert_one(doc)
+            perm = [x.lower() for x in split_name[i:]]
+            subname = " ".join(sorted(perm))
+            #fix for std::vector<bool> etc
+            if subname == "bool" or subname == "char": 
+                continue
+            doc = {
+                "reference_id" : result.inserted_id, 
+                "name" : subname,
+                "relevance" : (1-i/len(split_name)) * corrector,
+                "full_name" : ref.name
+                }
+            #print("index: ", doc)
+            index.insert_one(doc)
     
 os.chdir("../raw_data/cpp/reference/en/cpp")
 
