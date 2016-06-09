@@ -19,10 +19,11 @@ class ReferenceHandler(Handler):
                         "Make sure you spelled all tokens in your request propery. " +
                         "If you were asking about a specific method or function of some " +
                         "module or class, you can make your request more generic by directly asking " +
-                        "about that module or class.\n\n" +
-                        "If you were intending to search StackOverflow for a question, " +
-                        "then prefix your request with /so command: \n" +
-                        "/so " + query)
+                        "about that module or class.\n\n" #+
+                        #"If you were intending to search StackOverflow for a question, " +
+                        #"then prefix your request with /so command: \n" +
+                        #"/so " + query
+                        )
         return self.format_answer(answer)
             
 

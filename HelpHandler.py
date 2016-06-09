@@ -1,9 +1,7 @@
 from Handler import Handler
 
 HELP_MESSAGE = """
-The bot allows you to search across C++ and Python3 documentation, and across StackOverflow.
-
-To search for documentation, just type the entity you want to search for.
+The bot allows you to search across C++ and Python3 documentation. Just type the entity you want to search for.
 
 For example:
 
@@ -15,10 +13,16 @@ re match — for this specific function from <code>re</code> module
 
 You can omit some of first tokens, for example, "vector insert" also works. You can separate tokens with any non-word characters you like, for example, "vector::insert" also works.
 
-You can also search StackOverflow by starting your request with /so command. For example, "/so javascript print to console".
+You can explicitly specify the language, just add "cpp" (or "c++") or "python" to your request.
 
 The bot is ⓒ Petr Kalinin. The bot's code is open-sources under GNU AGPL, type /license for more information.
 """
+
+#, and across StackOverflow
+#You can also search StackOverflow by starting your request with /so command. For example, "/so javascript print to console".
+#To search for documentation, just type the entity you want to search for.
+
+
 
 class HelpHandler(Handler):
     def handle(self, query, state):

@@ -11,7 +11,7 @@ class State:
         self.set_handler("/start", StartHandler())
         self.set_handler("/help", HelpHandler())
         self.set_handler("/license", LicenseHandler())
-        self.set_handler("/so", StackoverflowHandler())
+        #self.set_handler("/so", StackoverflowHandler())
         self.set_handler(None, ReferenceHandler())
         
     def __str__(self):
