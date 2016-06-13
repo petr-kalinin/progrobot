@@ -23,6 +23,8 @@ NOT_FOUND_MESSAGE = ("No reference found for your request. "
                     #"/so " + query
                     )
 
+LIST_FOOTER = 'More than one reference found, type "/list {0}" to show all' 
+
 class BaseReference(object):
     def search(self, query):
         found = self.search_with_split(query, r"\s+|\:\:+|\.+")
@@ -67,18 +69,24 @@ class BaseReference(object):
                 if not need_continue:
                     break
         return found
-                    
     
 
 class ReferenceHandler(Handler, BaseReference):
     def handle(self, query, state):
         self.answer = None
+        self.number_of_answers = 0
         self.search(query)
         if not self.answer:
             self.answer = NOT_FOUND_MESSAGE
-        return self.format_answer(self.answer)
+        self.answer = {"text": self.answer}
+        if self.number_of_answers > 1:
+            self.add_footer(self.answer, LIST_FOOTER.format(query))
+        return self.format_answer(**self.answer)
 
     def found_reference(self, db, doc):
+        self.number_of_answers += 1
+        if self.number_of_answers > 1:
+            return False
         ref = db.reference.find({"_id" : doc["reference_id"]})
         # will always find one result only
         for res in ref:

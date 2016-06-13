@@ -30,7 +30,11 @@ class State:
             
     def handle(self, command, query):
         if command in self.handlers:
-            return self.handlers[command].handle(query, self)
+            answer = self.handlers[command].handle(query, self)
+            if "footer" in answer:
+                answer["text"] += "\n\n" + "\n\n".join(answer["footer"])
+                del answer["footer"]
+            return answer
         else:
             raise RuntimeError("Unknown command ", command)
         

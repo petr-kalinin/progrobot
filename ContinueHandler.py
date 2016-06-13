@@ -3,8 +3,8 @@ import copy
 import utils
 from Handler import Handler
 
-MAX_LEN = 4096
-THE_ANSWER_IS_LONG = "\n\n... (The answer is long, type /cont to continue)"
+MAX_LEN = 4000
+THE_ANSWER_IS_LONG = "The answer is long, type /cont to continue"
 
 class ContinueStartHandler(Handler):
     def __init__(self, base_handler):
@@ -17,10 +17,14 @@ class ContinueStartHandler(Handler):
             result = utils.short_to_length(text, MAX_LEN - len(THE_ANSWER_IS_LONG))
             text = result[0]
             if result[1]:
-                text = text + THE_ANSWER_IS_LONG
                 new_answer = copy.deepcopy(answer)
                 new_answer["text"] = result[1]
+                if "footer" in new_answer:
+                    del new_answer["footer"]
                 state.set_handler("/cont", ContinueHandler(new_answer))
+
+                text = text + "\n\n..."
+                self.add_footer(answer, THE_ANSWER_IS_LONG)
         else:
             state.set_handler("/cont", None)
         answer["text"] = text

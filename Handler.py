@@ -7,3 +7,8 @@ class Handler:
         answer["text"] = text
         return answer
     
+    def add_footer(self, answer, footer):
+        if not "footer" in answer:
+            answer["footer"] = []
+        answer["footer"].append(footer)
+    
