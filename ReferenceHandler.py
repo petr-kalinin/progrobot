@@ -33,10 +33,12 @@ class BaseReference(object):
             self.search_with_split(query, r"[^a-zA-Z_+-]+")
         
     def search_with_split(self, query, split_regexp):
-        found = self.search_one(query.lower(), split_regexp)
+        found = self.search_one(query.lower(), split_regexp, "name")
+        if not found:
+            found = self.search_one(query, split_regexp, "full_name")
         return found
 
-    def search_one(self, query, split_regexp):
+    def search_one(self, query, split_regexp, key):
         query = re.split(split_regexp, query)
         #print("Query: ", query)
         if len(query)>7:
@@ -57,13 +59,16 @@ class BaseReference(object):
         else:
             dbs = [db_cpp, db_python3]
         #print("Query: '", query, "'")
-        query = " ".join(sorted(filter(lambda x: x, query)))
+        query = filter(lambda x: x, query)
+        if key == "name":
+            query = sorted(query)
+        query = " ".join(query)
         #print("Query: '", query, "'")
         #print("dbs: ", str(dbs))
         found = False
         for db in dbs:
             #print("db: ", str(db))
-            cursor = db.index.find({"name" : query}, sort=[("relevance", pymongo.DESCENDING)])
+            cursor = db.index.find({key : query}, sort=[("relevance", pymongo.DESCENDING)])
             for doc in cursor:
                 found = True
                 need_continue = self.found_reference(db, doc)
@@ -74,6 +79,7 @@ class BaseReference(object):
 
 class ReferenceHandler(Handler, BaseReference):
     def handle(self, query, state):
+        #print("In ReferenceHandler, query=", query)
         self.answer = None
         self.number_of_answers = 0
         self.search(query)
