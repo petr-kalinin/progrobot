@@ -107,7 +107,7 @@ class ReferenceHandler(Handler, BaseReference):
                     + "\n\n" + res["copyright"])
             #print("ReferenceHandler result: " + result)
             self.answer = result
-            return False
+            return True
 
 class ReferenceListHandler(Handler, BaseReference):
     def handle(self, query, state):
