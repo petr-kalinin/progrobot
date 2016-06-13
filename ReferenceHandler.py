@@ -125,8 +125,8 @@ class ReferenceListHandler(Handler, BaseReference):
             else:
                 self.answer = "Only one reference found for your request:"
             markup = InlineKeyboardMarkup(inline_keyboard=[
-                     [InlineKeyboardButton(text="{0[0]} ({0[2]})".format(x), 
-                                           callback_data="{0[0]} {0[2]}".format(x))]
+                     [InlineKeyboardButton(text="{0[0]} ({0[3]})".format(x), 
+                                           callback_data="{0[1]} {0[3]}".format(x))]
                      for x in self.answers
                  ])
             additional_parameters = {"reply_markup": markup}
@@ -144,7 +144,8 @@ class ReferenceListHandler(Handler, BaseReference):
             #print("Found reference_id:", str(doc["reference_id"]))
             for res in ref:
                 #print("name: ",res["name"])
-                self.answers.append((res["name"], relevance, db.name))
+                callback = re.split(r"\([^)]", res["name"])[0].split(",")[0]
+                self.answers.append((res["name"], callback, relevance, db.name))
         return True
         #return relevance > self.best_relevance - EPS
         
