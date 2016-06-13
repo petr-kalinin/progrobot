@@ -33,7 +33,7 @@ def process_command(state, query, msg):
                 r = l + entity["length"]
                 command = query[l:r]
                 query = query[0:l] + query[r:]
-        #print("Current state: ", state)
+        print("Current state: ", state)
         #print("command:", command, "query:", query)
         answer = state.handle(command, query)
         print(answer)

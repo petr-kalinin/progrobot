@@ -7,6 +7,9 @@ from ContinueHandler import ContinueStartHandler
 
 class State:
     def __init__(self):
+        self.reset()
+        
+    def reset(self):
         self.handlers = {}
         self.set_handler("/start", StartHandler())
         self.set_handler("/help", HelpHandler())
@@ -18,7 +21,7 @@ class State:
     def __str__(self):
         res = "State: {\n"
         for command in self.handlers:
-            res += str(command) + ":" + type(self.handlers[command]).__name__ +"\n"
+            res += str(command) + ":" + str(self.handlers[command]) +"\n"
         res += "}"
         return res
         
@@ -30,13 +33,15 @@ class State:
             
     def handle(self, command, query):
         if command in self.handlers:
-            answer = self.handlers[command].handle(query, self)
+            handler = self.handlers[command]
+            self.reset()
+            answer = handler.handle(query, self)
             if "footer" in answer:
                 answer["text"] += "\n\n" + "\n\n".join(answer["footer"])
                 del answer["footer"]
             return answer
         else:
-            raise RuntimeError("Unknown command ", command)
+            return {"text": "Unknown command " + command}
         
     
 

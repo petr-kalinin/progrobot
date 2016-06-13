@@ -10,6 +10,9 @@ class ContinueStartHandler(Handler):
     def __init__(self, base_handler):
         self.base_handler = base_handler
         
+    def __str__(self):
+        return "ContinueStartHandler(" + str(self.base_handler) + ")"
+        
     def handle(self, query, state):
         answer = self.base_handler.handle(query, state)
         text = answer["text"]

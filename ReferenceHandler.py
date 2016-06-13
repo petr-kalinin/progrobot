@@ -8,6 +8,7 @@ from telepot.namedtuple import InlineKeyboardMarkup, InlineKeyboardButton
 
 from html2tele import html2tele
 from Handler import Handler
+from DefaultValueHandler import DefaultValueHandler
 
 client = pymongo.MongoClient()
 db_cpp = client.cpp
@@ -81,6 +82,7 @@ class ReferenceHandler(Handler, BaseReference):
         self.answer = {"text": self.answer}
         if self.number_of_answers > 1:
             self.add_footer(self.answer, LIST_FOOTER.format(query))
+            state.set_handler("/list", DefaultValueHandler(ReferenceListHandler(), query))
         return self.format_answer(**self.answer)
 
     def found_reference(self, db, doc):
