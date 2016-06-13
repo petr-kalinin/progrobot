@@ -41,7 +41,7 @@ def process_command(state, query, msg):
         return answer
     except Exception as e:
         traceback.print_exc()
-        return {"text": "Error: " + str(type(e)) + ": " + str(e)}
+        return {"text": "Error: " + str(type(e))}
     
 def force_chat_id(msg):
     #print("In force_chat_id")
@@ -81,6 +81,7 @@ class ProgroBot(telepot.helper.ChatHandler):
         except Exception as e:
             traceback.print_exc()
             print("Error: " + str(e))
+            self.sender.sendMessage("Error: " + str(e))
             
     #@asyncio.coroutine
     def on_callback_query(self, msg):
@@ -97,6 +98,7 @@ class ProgroBot(telepot.helper.ChatHandler):
         except Exception as e:
             traceback.print_exc()
             print("Error: " + str(e))
+            self.sender.sendMessage("Error: " + str(e))
         
 def per_real_chat_id(msg):
     if "chat" in msg:
