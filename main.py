@@ -8,7 +8,7 @@ import random
 import asyncio
 import telepot
 #from telepot.async.delegate import per_chat_id, per_from_id, create_open
-from telepot.delegate import per_chat_id, per_from_id, create_open
+from telepot.delegate import per_chat_id, per_from_id, per_inline_from_id, create_open
 from pprint import pprint
 from datetime import datetime
 import traceback
@@ -16,6 +16,7 @@ import pymongo
 import pdb
 
 from State import State
+from ReferenceHandler import InlineReference
 
 client = pymongo.MongoClient()
 db = client.requests
@@ -99,6 +100,28 @@ class ProgroBot(telepot.helper.ChatHandler):
             traceback.print_exc()
             print("Error: " + str(e))
             self.sender.sendMessage("Error: " + str(e))
+            
+class InlineProgroBot(telepot.helper.UserHandler):
+    def __init__(self, seed_tuple, timeout):
+        super(InlineProgroBot, self).__init__(seed_tuple, timeout, flavors=['inline_query', 'chosen_inline_result'])
+        self._answerer = telepot.helper.Answerer(self.bot)
+
+    def on_inline_query(self, msg):
+        query_id, from_id, query_string = telepot.glance(msg, flavor='inline_query')
+        print(self.id, ':', 'Inline Query:', query_id, from_id, query_string)
+
+        def compute_answer():
+            ir = InlineReference()
+            result = ir.search_inline(query_string)
+            print("Inline result: ", result)
+            return result
+
+        self._answerer.answer(msg, compute_answer)
+
+    def on_chosen_inline_result(self, msg):
+        result_id, from_id, query_string = telepot.glance(msg, flavor='chosen_inline_result')
+        print(self.id, ':', 'Chosen Inline Result:', result_id, from_id, query_string)
+        
         
 def per_real_chat_id(msg):
     if "chat" in msg:
@@ -129,6 +152,7 @@ TOKEN = sys.argv[1]  # get token from command-line
 
 #bot = telepot.async.DelegatorBot(TOKEN, [
 bot = DelegatorBotFixed(TOKEN, [
+    (per_inline_from_id(), create_open(InlineProgroBot, timeout=300)),
     (per_real_chat_id, create_open(ProgroBot, timeout=300)),
 ])
 

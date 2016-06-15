@@ -24,7 +24,23 @@ NOT_FOUND_MESSAGE = ("No reference found for your request. "
                     #"/so " + query
                     )
 
+INLINE_NOT_FOUND_MESSAGE = "Sorry, nothing found"
+
 LIST_FOOTER = 'More than one reference found, type "/list {0}" to show all' 
+
+def format_reference(res):
+    subitems = [(html.escape(x[0]), x[1]) for x in res["subitems"]]
+    subitems = [html2tele("<code>{0}</code> : {1}".format(*x)) for x in subitems]
+    result = ""
+    if res["module"]:
+        result += "<code>" + html.escape(res["module"]) + "</code>\n"
+    result = result + "<b>" + html.escape(res["name"]) + "</b>\n\n"
+    if res["usage"]:
+        result += "<pre>" + html.escape(res["usage"]) + "</pre>\n\n"
+    result += (html2tele(res.get("full", "")) + "\n\n"
+            + "\n".join(subitems) 
+            + "\n\n" + res["copyright"])
+    return result
 
 class BaseReference(object):
     def search(self, query):
@@ -98,21 +114,7 @@ class ReferenceHandler(Handler, BaseReference):
         ref = db.reference.find({"_id" : doc["reference_id"]})
         # will always find one result only
         for res in ref:
-            #print("reference returns")
-            #pprint(res)
-            subitems = [(html.escape(x[0]), x[1]) for x in res["subitems"]]
-            subitems = [html2tele("<code>{0}</code> : {1}".format(*x)) for x in subitems]
-            result = ""
-            if res["module"]:
-                result += "<code>" + html.escape(res["module"]) + "</code>\n"
-            result = result + "<b>" + html.escape(res["name"]) + "</b>\n\n"
-            if res["usage"]:
-                result += "<pre>" + html.escape(res["usage"]) + "</pre>\n\n"
-            result += (html2tele(res.get("full", "")) + "\n\n"
-                    + "\n".join(subitems) 
-                    + "\n\n" + res["copyright"])
-            #print("ReferenceHandler result: " + result)
-            self.answer = result
+            self.answer = format_reference(res)
             return True
 
 class ReferenceListHandler(Handler, BaseReference):
@@ -155,3 +157,29 @@ class ReferenceListHandler(Handler, BaseReference):
         return True
         #return relevance > self.best_relevance - EPS
         
+        
+class InlineReference(BaseReference):
+    def add_result(self, title, text):
+        text = re.sub(r"\n(\s*\n)+", "\n\n", text)
+        self.answer.append({'type': 'article',
+                'id': title, 
+                'title': title, 
+                'message_text': text,
+                'parse_mode': 'HTML'})
+    
+    def search_inline(self, query):
+        self.answer = []
+        self.search(query)
+        if not self.answer:
+            self.add_result(INLINE_NOT_FOUND_MESSAGE, INLINE_NOT_FOUND_MESSAGE)
+        return self.answer
+
+    def found_reference(self, db, doc):
+        ref = db.reference.find({"_id" : doc["reference_id"]})
+        # will always find one result only
+        for res in ref:
+            #print("reference returns")
+            #pprint(res)
+            #print("ReferenceHandler result: " + result)
+            self.add_result(res["name"], format_reference(res))
+            return True
