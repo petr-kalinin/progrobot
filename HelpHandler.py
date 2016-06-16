@@ -15,6 +15,8 @@ You can omit some of first tokens, for example, "vector insert" also works. You 
 
 You can explicitly specify the language, just add "cpp" (or "c++") or "python" to your request.
 
+Inline mode is also supported; just type "@progrobot vector" in any other chat.
+
 The bot is ⓒ Petr Kalinin. The bot's code is open-sources under GNU AGPL, type /license for more information.
 """
 
