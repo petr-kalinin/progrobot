@@ -18,6 +18,8 @@ import pdb
 from State import State
 from ReferenceHandler import InlineReference
 
+BOT_NAME="progrobot"
+
 client = pymongo.MongoClient()
 db = client.requests
 requests = db.requests
@@ -34,6 +36,10 @@ def process_command(state, query, msg):
                 r = l + entity["length"]
                 command = query[l:r]
                 query = query[0:l] + query[r:]
+                command = command.lower()
+                bot_ref = "@" + BOT_NAME
+                if command.endswith(bot_ref):
+                    command = command[:-len(bot_ref)]
         print("Current state: ", state)
         #print("command:", command, "query:", query)
         answer = state.handle(command, query)
