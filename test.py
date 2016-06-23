@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 
-from bs4 import BeautifulSoup
+from State import State
+from datetime import datetime
 
-soup = BeautifulSoup("<html><body><pre>  \n\n \n<b></b></body></html>", "lxml")
-print(repr(str(soup)))
+print(datetime.now())
+print(State().handle(None, "len"))
