@@ -3,5 +3,5 @@
 from State import State
 from datetime import datetime
 
-print(datetime.now())
+print(datetime.utcnow())
 print(State().handle(None, "len"))
