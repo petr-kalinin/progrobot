@@ -77,7 +77,9 @@ def make_desc(soup):
     fullest = ""
     in_full = True
     while el:
-        if isinstance(el, bs4.element.Tag) and (el.get("id") == "toc" or el.name == "h3"):
+        if isinstance(el, bs4.element.Tag) and (
+                el.get("id") == "toc" or el.name == "h3" or 
+                ("t-dsc-begin" in el.get("class", []))):
             in_full = False
         if not isinstance(el, bs4.element.Comment):
             if in_full:
@@ -87,7 +89,7 @@ def make_desc(soup):
     
     return (short, full, fullest)
 
-def make_subitems(soup, filename):
+def make_subitems(soup, filename, name):
     all_dsc = soup.find_all(class_="t-dsc")
     subitems = []
     needed_dir = os.path.splitext(os.path.basename(filename))[0]
@@ -98,7 +100,7 @@ def make_subitems(soup, filename):
         href = a.get("href")
         if not href:
             continue
-        if not href.startswith(needed_dir + "/"):
+        if (not href.startswith(needed_dir + "/")) and (not name.startswith("Standard library header")):
             continue
         for tag in dsc.find_all(class_="t-mark"):
             tag.decompose()
@@ -110,6 +112,8 @@ def make_subitems(soup, filename):
                         subitem.append("".join(cchild.strings).strip())
         subitem = "\n".join(subitem)
         tr2 = dsc.select("> td:nth-of-type(2)")
+        if not tr2:
+            continue
         desc = "".join(tr2[0].strings).strip()
         subitems.append((subitem, desc))
     return subitems
@@ -128,7 +132,7 @@ def parse_file(filename):
     ref.usage = make_usage(soup)
     correct_code(soup)  # only after usage
     ref.short, ref.full, ref.fullest = make_desc(soup)
-    ref.subitems = make_subitems(soup, filename)
+    ref.subitems = make_subitems(soup, filename, ref.name)
     ref.copyright = "ⓒ CppReference authors, CC-BY-SA 3.0 / GFDL, " + ref.href
     return ref
 
@@ -189,4 +193,4 @@ for directory, subdirs, files in os.walk("."):
 #process_file("container/vector.html", reference, index)
 #process_file("container/vector/insert.html", reference, index)
 #process_file("experimental/fs/path.html", reference, index)
-
+#process_file("header/vector.html", reference, index)
