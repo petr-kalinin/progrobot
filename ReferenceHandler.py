@@ -98,6 +98,7 @@ class ReferenceHandler(Handler, BaseReference):
         #print("In ReferenceHandler, query=", query)
         self.answer = None
         self.number_of_answers = 0
+        self.best_relevance = 0
         self.search(query)
         if not self.answer:
             self.answer = NOT_FOUND_MESSAGE
@@ -109,13 +110,13 @@ class ReferenceHandler(Handler, BaseReference):
 
     def found_reference(self, db, doc):
         self.number_of_answers += 1
-        if self.number_of_answers > 1:
-            return False
-        ref = db.reference.find({"_id" : doc["reference_id"]})
-        # will always find one result only
-        for res in ref:
-            self.answer = format_reference(res)
-            return True
+        if self.best_relevance < doc["relevance"]:
+            self.best_relevance = doc["relevance"]
+            ref = db.reference.find({"_id" : doc["reference_id"]})
+            # will always find one result only
+            for res in ref:
+                self.answer = format_reference(res)
+        return self.number_of_answers > 1
 
 class ReferenceListHandler(Handler, BaseReference):
     def handle(self, query, state):
