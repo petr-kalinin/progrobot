@@ -8,9 +8,11 @@ import unittest
 NONCOMPLETE_SENTENCE_ENDS = ',!?)]:;'
 
 def is_balanced(text):
-    for pair in ['()', '“”']:
-        if text.count(pair[0]) != text.count(pair[1]):
-            return False
+    if text.count('“') != text.count('”'):
+        return False
+    # count [ and ( together for python.random answer that contains "[0, 1)" string
+    if text.count('(') + text.count('[') != text.count(')') + text.count(']'):
+        return False
     return True
 
 def sentences(text, allow_noncomplete_sentence=False, min_len_for_noncomplele=0):
@@ -49,6 +51,7 @@ def first_sentence(text):
 def short_to_length(text, length):
     if len(text) < length:
         return text
+    #print("short_to_length input: ", text)
     html = "<html><body><div><pre>" + text + "</pre></div></body></html>"
     soup = BeautifulSoup(html, 'lxml')
     soup = soup.pre
