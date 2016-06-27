@@ -120,7 +120,7 @@ def parse_file(filename, refs):
         elif hasclass(tag, ["section", "seealso"]):
             currentName = None
             tag = tag.next_element
-        elif hasclass(tag, ['class', 'classmethod', 'method', 'function', 'data', 'exception']):
+        elif hasclass(tag, ['class', 'classmethod', 'method', 'function', 'data', 'exception', 'attribute']):
             currentName = tag.dt.get('id')
             
             usage = "".join(tag.dt.strings).strip()
@@ -166,7 +166,7 @@ def insert_ref(ref, reference, index):
                 "relevance" : 1-i/len(split_name),
                 "full_name" : ref.name
                 }
-            print("index: ", doc)
+            #print("index: ", doc)
             index.insert_one(doc)
     
 def process_file(filename, refs):
@@ -202,6 +202,7 @@ for directory, subdirs, files in os.walk("."):
 #process_file("3/library/json.html", refs)
 #process_file("3/library/pprint.html", refs)
 #process_file("3/library/unittest.html", refs)
+#process_file("3/library/ctypes.html", refs)
 
 finalize(refs)
 
@@ -271,7 +272,12 @@ def check_pprint():
     
 def check_itertools():
     assert_ends_with(refs['itertools'].full, 'vector2))</span></code>.</p>')
+
+def check_ctypes():
+    assert "ctypes.Array._length_" in refs
+    assert find_subitem(refs["ctypes.Array"], "ctypes.Array._length_")
     
+check_ctypes()
 check_itertools()
 check_re()
 check_pprint()
