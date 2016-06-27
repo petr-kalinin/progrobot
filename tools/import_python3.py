@@ -120,7 +120,7 @@ def parse_file(filename, refs):
         elif hasclass(tag, ["section", "seealso"]):
             currentName = None
             tag = tag.next_element
-        elif hasclass(tag, ['class', 'classmethod', 'method', 'function', 'data', 'exception', 'attribute']):
+        elif hasclass(tag, ['class', 'classmethod', 'method', 'function', 'data', 'exception', 'attribute', 'staticmethod', 'cmdoption']):
             currentName = tag.dt.get('id')
             
             usage = "".join(tag.dt.strings).strip()
@@ -277,6 +277,15 @@ def check_ctypes():
     assert "ctypes.Array._length_" in refs
     assert find_subitem(refs["ctypes.Array"], "ctypes.Array._length_")
     
+def check_paragraph_signs():
+    found = False
+    for ref in refs:
+        if "¶" in refs[ref].full:
+            print("¶ found in ", ref)
+            found = True
+    assert not found
+    
+check_paragraph_signs()
 check_ctypes()
 check_itertools()
 check_re()
