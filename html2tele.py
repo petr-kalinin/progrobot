@@ -10,7 +10,7 @@ SUPPORTED_TAGS = ('b', 'strong', 'i', 'em', 'code', 'pre')
 
 def find_href(attrs):
     for attr in attrs:
-        if attr[0] == "href":
+        if attr[0] == "href" and attr[0].startswith("http"):
             return attr[1]
     return ""
         
@@ -63,8 +63,9 @@ class _HTMLToText(HTMLParser):
             self.current_tag = tag
         elif tag == "a" and (self.tag_count == 0):
             href = find_href(attrs)
-            self.push_tag("<a href='{0}'>".format(html.escape(href, quote=True)))
-            self.current_tag = "a"
+            if href:
+                self.push_tag("<a href='{0}'>".format(html.escape(href, quote=True)))
+                self.current_tag = "a"
         elif tag in ('p', 'br', 'div', 'table', 'dt', 'dd', 'li', 'tr'):
             self.push_newlines(2)
         elif tag == 'td':

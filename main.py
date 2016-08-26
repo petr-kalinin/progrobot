@@ -8,7 +8,7 @@ import random
 import asyncio
 import telepot
 #from telepot.async.delegate import per_chat_id, per_from_id, create_open
-from telepot.delegate import per_chat_id, per_from_id, per_inline_from_id, create_open
+from telepot.delegate import per_chat_id, per_from_id, per_inline_from_id, create_open, pave_event_space
 from pprint import pprint
 from datetime import datetime
 import traceback
@@ -61,13 +61,13 @@ def force_chat_id(msg):
 
 #class ProgroBot(telepot.async.helper.ChatHandler):
 class ProgroBot(telepot.helper.ChatHandler):
-    def __init__(self, seed_tuple, timeout):
+    def __init__(self, seed_tuple, *args, **kwargs):
         try:
             #print("In constructor", seed_tuple)
             msg = seed_tuple[1]
             force_chat_id(msg)
             seed_tuple = (seed_tuple[0], msg, seed_tuple[2])
-            super(ProgroBot, self).__init__(seed_tuple, timeout)
+            super(ProgroBot, self).__init__(seed_tuple, *args, **kwargs)
             self.state = State()
         except Exception as e:
             traceback.print_exc()
@@ -158,8 +158,8 @@ TOKEN = sys.argv[1]  # get token from command-line
 
 #bot = telepot.async.DelegatorBot(TOKEN, [
 bot = DelegatorBotFixed(TOKEN, [
-    (per_inline_from_id(), create_open(InlineProgroBot, timeout=300)),
-    (per_real_chat_id, create_open(ProgroBot, timeout=300)),
+    pave_event_space()(per_inline_from_id(), create_open, InlineProgroBot, timeout=300),
+    pave_event_space()(per_real_chat_id, create_open, ProgroBot, timeout=300),
 ])
 
 
