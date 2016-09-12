@@ -148,7 +148,7 @@ class ReferenceListHandler(Handler, BaseReference):
         if relevance > self.best_relevance + EPS:
             self.best_relevance = relevance
             #self.answers = []
-        if True: #relevance > self.best_relevance - EPS:
+        if True:  #relevance > self.best_relevance - EPS:
             ref = db.reference.find({"_id" : doc["reference_id"]})
             #print("Found reference_id:", str(doc["reference_id"]))
             for res in ref:

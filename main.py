@@ -5,9 +5,7 @@ import re
 import time
 import threading
 import random
-import asyncio
 import telepot
-#from telepot.async.delegate import per_chat_id, per_from_id, create_open
 from telepot.delegate import per_chat_id, per_from_id, per_inline_from_id, create_open, pave_event_space
 from pprint import pprint
 from datetime import datetime
@@ -59,7 +57,6 @@ def force_chat_id(msg):
     elif "from" in msg:
         msg["chat"] = {"id": msg["from"]["id"]}
 
-#class ProgroBot(telepot.async.helper.ChatHandler):
 class ProgroBot(telepot.helper.ChatHandler):
     def __init__(self, seed_tuple, *args, **kwargs):
         try:
@@ -73,7 +70,6 @@ class ProgroBot(telepot.helper.ChatHandler):
             traceback.print_exc()
             print("Error in constructor: " + str(e))
 
-    #@asyncio.coroutine
     def on_chat_message(self, msg):
         try:
             #print("In on_chat_message")
@@ -83,14 +79,12 @@ class ProgroBot(telepot.helper.ChatHandler):
             requests.insert({"request": msg, "time": datetime.now().isoformat()})
             
             answer = process_command(self.state, msg["text"], msg)
-            #yield from self.sender.sendMessage(parse_mode="HTML", **answer)
             self.sender.sendMessage(parse_mode="HTML", **answer)
         except Exception as e:
             traceback.print_exc()
             print("Error: " + str(e))
             self.sender.sendMessage("Error: " + str(e))
             
-    #@asyncio.coroutine
     def on_callback_query(self, msg):
         try:
             #print("In on_callback_query")
@@ -100,7 +94,6 @@ class ProgroBot(telepot.helper.ChatHandler):
             requests.insert({"request": msg, "time": datetime.now().isoformat()})
 
             answer = process_command(self.state, msg["data"], msg)
-            #yield from self.sender.sendMessage(parse_mode="HTML", **answer)
             self.sender.sendMessage(parse_mode="HTML", **answer)
         except Exception as e:
             traceback.print_exc()
@@ -156,16 +149,12 @@ class DelegatorBotFixed(telepot.DelegatorBot):
 
 TOKEN = sys.argv[1]  # get token from command-line
 
-#bot = telepot.async.DelegatorBot(TOKEN, [
 bot = DelegatorBotFixed(TOKEN, [
     pave_event_space()(per_inline_from_id(), create_open, InlineProgroBot, timeout=300),
     pave_event_space()(per_real_chat_id, create_open, ProgroBot, timeout=300),
 ])
 
 
-#loop = asyncio.get_event_loop()
-#loop.create_task(bot.message_loop())
 print('Listening ...')
 
-#loop.run_forever()
 bot.message_loop(run_forever=True)
