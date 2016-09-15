@@ -101,25 +101,25 @@ class ProgroBot(telepot.helper.ChatHandler):
             self.sender.sendMessage("Error: " + str(e))
             
 class InlineProgroBot(telepot.helper.UserHandler):
-    def __init__(self, seed_tuple, timeout):
-        super(InlineProgroBot, self).__init__(seed_tuple, timeout, flavors=['inline_query', 'chosen_inline_result'])
+    def __init__(self, *args, **kwargs):
+        super(InlineProgroBot, self).__init__(*args, flavors=['inline_query', 'chosen_inline_result'], **kwargs)
         self._answerer = telepot.helper.Answerer(self.bot)
 
     def on_inline_query(self, msg):
         query_id, from_id, query_string = telepot.glance(msg, flavor='inline_query')
-        print(self.id, ':', 'Inline Query:', query_id, from_id, query_string)
+        #print(self.id, ':', 'Inline Query:', query_id, from_id, query_string)
 
         def compute_answer():
             ir = InlineReference()
             result = ir.search_inline(query_string)
-            print("Inline result: ", result)
+            #print("Inline result: ", result)
             return result
 
         self._answerer.answer(msg, compute_answer)
 
     def on_chosen_inline_result(self, msg):
         result_id, from_id, query_string = telepot.glance(msg, flavor='chosen_inline_result')
-        print(self.id, ':', 'Chosen Inline Result:', result_id, from_id, query_string)
+        #print(self.id, ':', 'Chosen Inline Result:', result_id, from_id, query_string)
         
         
 def per_real_chat_id(msg):
@@ -145,6 +145,7 @@ class DelegatorBotFixed(telepot.DelegatorBot):
                         'text': msg['data']}
         else:
             new_msg = msg
+        print("mgs=", new_msg)
         super().handle(new_msg)
 
 TOKEN = sys.argv[1]  # get token from command-line

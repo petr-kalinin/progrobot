@@ -2,6 +2,7 @@
 import pymongo
 import re
 import html
+import hashlib
 from pprint import pprint
 
 from telepot.namedtuple import InlineKeyboardMarkup, InlineKeyboardButton
@@ -9,6 +10,7 @@ from telepot.namedtuple import InlineKeyboardMarkup, InlineKeyboardButton
 from html2tele import html2tele
 from Handler import Handler
 from DefaultValueHandler import DefaultValueHandler
+from utils import short_to_length
 
 client = pymongo.MongoClient()
 db_cpp = client.cpp
@@ -27,6 +29,8 @@ NOT_FOUND_MESSAGE = ("No reference found for your request. "
 INLINE_NOT_FOUND_MESSAGE = "Sorry, nothing found"
 
 LIST_FOOTER = 'More than one reference found, type "/list {0}" to show all' 
+
+MAX_LEN = 4060
 
 def format_reference(res):
     subitems = [(html.escape(x[0]), x[1]) for x in res["subitems"]]
@@ -162,8 +166,12 @@ class ReferenceListHandler(Handler, BaseReference):
 class InlineReference(BaseReference):
     def add_result(self, title, text):
         text = re.sub(r"\n(\s*\n)+", "\n\n", text)
+        if len(text) > MAX_LEN:
+            text = short_to_length(text, MAX_LEN)[0] + "\n\n..."
+        res_id = hashlib.md5(title.encode("utf-8")).hexdigest()
+        #print("res_id: ", res_id)
         self.answer.append({'type': 'article',
-                'id': title, 
+                'id': res_id, 
                 'title': title, 
                 'message_text': text,
                 'parse_mode': 'HTML'})
@@ -182,5 +190,6 @@ class InlineReference(BaseReference):
             #print("reference returns")
             #pprint(res)
             #print("ReferenceHandler result: " + result)
+            #print("Inline reference ", res["name"])
             self.add_result(res["name"], format_reference(res))
             return True
