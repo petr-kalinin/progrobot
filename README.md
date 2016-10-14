@@ -54,7 +54,7 @@ and verify that needed databases have at least some data:
     
 Each `findOne()` command should return something.
 
-# Start bot
+## Start bot
 
 You need to have a bot token (you get the token when you [create a bot](https://core.telegram.org/bots#3-how-do-i-create-a-bot)). The token usually has the form of several digits, colon and a long alphanumeric string. Having the token, just run
 
